@@ -1,0 +1,121 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    min-width: 320px;
+    min-height: 460px;
+}
+
+#tabs{
+
+}
+table {
+    font-size: 1em;
+}
+
+.ui-draggable, .ui-droppable {
+    background-position: top;
+}
+
+.ui-autocomplete {
+    max-height: 100px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+}
+/* IE 6 doesn't support max-height
+ * we use height instead, but this forces the menu to always be this tall
+ */
+* html .ui-autocomplete {
+    height: 100px;
+}
+
+.medium-editor-placeholder,.medium-editor-element
+{
+border: 1px solid #ccc;
+
+}
+input[type=button], input[type=submit], input[type=reset] {
+    background-color: #ff4500;
+    border: none;
+    color: white;
+    padding: 8px 32px;
+    text-decoration: none;
+    display: inline;
+    margin: 2px 2px;
+    cursor: pointer;
+}
+input[type=submit]
+{
+    background-color:#4CAF50;
+}
+label {
+    display: inline-block;
+    width: auto;
+    text-align: right; }
+form p{
+    font-size: 12px;
+    margin-bottom:1px;
+}
+.select-style {
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    width: auto;
+    border-radius: 3px;
+    overflow: hidden;
+    background-color: #fff;
+    background: #fff;
+    position: relative;
+}
+
+.select-style:after {
+    top: 50%;
+    left: 95%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-color: rgba(0, 0, 0, 0);
+    border-top-color: #000000;
+    border-width: 5px;
+    margin-top: -2px;
+    z-index: 100;
+}
+
+.select-style select {
+    padding: 5px 8px;
+    width: 130%;
+
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+    background-image: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.select-style select:focus {
+    outline: none;
+}
+#errorLogs p,#settingsLog p{
+    color: #ff0000;
+    text:16px;
+}
+#errorLogs a{
+    color: #0000ff;
+    text:16px;
+}
+
+textarea {
+    width: 100%;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
+}
+
+.medium-editor-element
+{
+    min-height: 32px;
+}

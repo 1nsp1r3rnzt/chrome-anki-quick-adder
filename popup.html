@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Anki Adder Chrome Extension</title>
+    <script src="jquery-3.3.1.min.js"></script>
+    <script src="javascript.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <script src="medium-editor/dist/js/medium-editor.js"></script>
+    <script src='spectrum.js'></script>
+    <link rel='stylesheet' href='spectrum.css' />
+    <link rel="stylesheet" href="style.css" class="rel">
+    <link rel="stylesheet" href="jquery-ui.css" class="rel">
+    <link rel="stylesheet" href="medium-editor/dist/css/medium-editor.css"> <!-- Core -->
+    <link rel="stylesheet" href="medium-editor/dist/css/themes/default.css"> <!-- or any other theme -->
+</head>
+<body>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<body>
+
+
+
+<div id="tabs">
+    <ul>
+        <li><a href="#tabs-1">Add Card</a></li>
+        <li><a href="#tabs-2">Settings</a></li>
+        <li><a href="#tabs-3">About</a></li>
+    </ul>
+    <div id="tabs-1">
+
+
+        <div class="ui-widget">
+            <div id="errorLogs"></div>
+
+            <form action="">
+                Current Deck:
+                <div class="select-style">
+                <select id="deckList"></select>
+                </div>
+                <p>Note Type:</p>
+                <div class="select-style">
+
+                    <select id="modelList">  </select></div>
+
+
+            <h2> Add Card</h2>
+                <div id="addCard">
+                    <label for="Default-Front-field">Front:</label> <textarea type="text" name="front" class="editable" id="Default-Front-field"></textarea><br>
+                    <label for="Default-Back-field">Back:</label>  <textarea type="text" name="back" class="editable" id="Default-Back-Field"></textarea><br>
+                </div>
+            <label for="tags">Tags: </label>
+            <input id="tags" size="45">
+                <input type="button" id="resetButton" value="Reset">
+
+                <input type="submit" value="Add Note">
+            </form>
+        </div>
+    </div>
+
+    <div id="tabs-2">
+
+        <table style="width:100%">
+            <tr>
+                <td>Clear all Settings</td>
+                <td><input type="button" id="clearAllDefaults" value="Delete"></td>
+
+            </tr>
+            <tr>
+                <td><p>Append: Append fields data from chrome menu instead of overwrite.
+                </p>
+                </td>
+                <td><input type="button" id="appendFields" value="Change"> </td>
+
+            </tr>
+            <!--beta testing-->
+            <!--<tr>-->
+                <!--<td>Delete Extension!!</td>-->
+                <!--<td><input type="button" id="nukeExtension" value="Nuke it"></td>-->
+
+            <!--</tr>-->
+            <tr>
+                <td>Rebuild Chrome Menu</td>
+                <td><input type="button" id="reloadChromeMenu" value="Rebuild Menu"></td>
+
+            </tr>
+            <tr>
+            <td>Sync Anki Desktop to AnkiWeb(Opens Anki Desktop)</td>
+            <td><input type="button" id="syncAnkiToWeb" value="Start Sync"></td>
+
+            </tr>
+        </table>
+        <hr>
+        <div id="settingsLog"></div>
+
+    </div>
+
+    <div id="tabs-3">
+
+
+
+        <table style="width:100%">
+            <tr>
+                <td> Credits:</td>
+                <td>Icon made by <a href="https://www.flaticon.com/authors/freepik">freepik</a> from www.flaticon.com </td>
+            </tr>
+            <tr>
+                <td>Libraries:</td>
+                <td><a href="http://jquery.com">Jquery</a></td>
+
+            </tr>
+            <tr>
+                <td></td>
+                <td><a href="https://github.com/yabwe/medium-editor">Medium Wuswyg editor</a></td>
+
+
+            </tr>
+            <tr>
+                    <td></td>
+          <td><a href="https://github.com/FooSoft/anki-connect">AnkiConnect</a></td>
+            </tr>
+        </table>
+
+    </div>
+</div>
+
+
+
+</body>
+</html>
+
+
+</body>
+</html>
