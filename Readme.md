@@ -1,4 +1,5 @@
 
+
 [<img src="https://github.com/1nsp1r3rnzt/chrome-anki-quick-adder/blob/master/docs/images/icon.png?raw=true&s=200">](https://chrome.google.com/webstore/detail/anki-quick-adder/gpbcbbajoagdgnokieocaplbhkiidmmb)
 
 # chrome Anki Quick Adder
@@ -22,11 +23,11 @@
 
 - Please *start Anki* before running chrome or before installing chrome extension.
 1. Install [ankiConnect](https://ankiweb.net/shared/info/2055492159)
-1.a Please [see note for window](https://github.com/FooSoft/anki-connect#notes-for-windows-users) users to allow ankiConnect.
-1.b Mac users need to **[follow these instructions](https://github.com/FooSoft/anki-connect#notes-for-mac-os-x-users)** to allow communication.
-3. Restart Anki 
-4. install [extension from webstore](https://chrome.google.com/webstore/detail/anki-quick-adder/gpbcbbajoagdgnokieocaplbhkiidmmb)
-5. See known [bugs and issues](#known-bugs-and-solutions) in this readme to solve any bugs.
+- Please [see note for window](https://github.com/FooSoft/anki-connect#notes-for-windows-users) users to allow ankiConnect.
+- Mac users need to **[follow these instructions](https://github.com/FooSoft/anki-connect#notes-for-mac-os-x-users)** to allow communication.
+2. Restart Anki 
+3. install [extension from webstore](https://chrome.google.com/webstore/detail/anki-quick-adder/gpbcbbajoagdgnokieocaplbhkiidmmb)
+4. See known [bugs and issues](#known-bugs-and-solutions) in this readme to solve any bugs.
 
 ### Clone
 - Clone this repo to your local machine using `https://github.com/1nsp1r3rnzt/chrome-anki-quick-adder/`
@@ -48,13 +49,14 @@
 
 ###  Add From Popup.
 ![enter image description here](https://raw.githubusercontent.com/1nsp1r3rnzt/chrome-anki-quick-adder/master/docs/images/ankiStep1.png)
-1 - Run Anki. The decklist is populated then only.
-2 - Click App icon to open app.
-3 - Select Deck type.
-4 - Select Card type.
-5 - Enter the data in fields.
-6( Optional) - Enter **tags separated by ;** for multiple tags.
-7 - Click Add Note.
+
+1.  Run Anki. The decklist is populated then only.
+2. Click App icon to open app.
+3. Select Deck type.
+4. Select Card type.
+5.  Enter the data in fields.
+6.  ( Optional) Enter **tags separated by ;** for multiple tags.
+7. Click Add Note.
 8. You see a notification if card is entered successfully or not.
 
 ___
