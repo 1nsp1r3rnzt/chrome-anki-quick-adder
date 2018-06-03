@@ -3,7 +3,7 @@ var currentDeck;
 var currentFields;
 var currentTags;
 var currentNoteType;
-var debugStatus = 0;
+var debugStatus;
 var savedFormFields = savedFormFields || [];
 var appendModeSettings;
 var manifest = chrome.runtime.getManifest();
@@ -12,6 +12,8 @@ var connectionStatus;
 var port = chrome.extension.connect({
     name: "ankiadder"
 });
+
+
 
 
 chrome.runtime.sendMessage({
@@ -27,7 +29,9 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     }
 });
 
+
 function restore_options() {
+    getChanges("debugStatus");
     getChanges("currentDeck");
     getChanges("currentNoteType");
     getChanges("currentFields");
@@ -37,15 +41,23 @@ function restore_options() {
     try {
         var background = chrome.extension.getBackgroundPage();
         savedFormFields = background.fieldsSync();
-        console.log(savedFormFields);
+        debugLog(savedFormFields);
     } catch (e) {
-        console.log(e);
+        debugLog(e);
         savedFormFields = [];
     }
 
 
 }
-document.addEventListener('DOMContentLoaded', restore_options);
+$(document).ready(function () {
+
+    // ..
+    restore_options();
+    // ..
+    //when user nuke whole storage.
+
+});
+
 
 function ankiConnectRequest(action, version, params = {}) {
     return new Promise((resolve, reject) => {
@@ -60,18 +72,14 @@ function ankiConnectRequest(action, version, params = {}) {
                     if (response.hasOwnProperty('result')) {
 
 
-                        if(response.result)
-                        {
+                        if (response.result) {
                             resolve(response.result);
                             saveChanges(action, response.result);
 
-                        }
-                        else
-                        {
+                        } else {
                             throw response.error;
                         }
 
-                        // console.log(property);
 
                     } else {
                         reject('failed to get results from AnkiConnect');
@@ -83,7 +91,6 @@ function ankiConnectRequest(action, version, params = {}) {
         });
 
         xhr.open('POST', 'http://127.0.0.1:8765');
-        console.log(params);
         var sendData = JSON.stringify({
             action,
             version,
@@ -91,7 +98,7 @@ function ankiConnectRequest(action, version, params = {}) {
         });
 
         xhr.send(sendData);
-        // console.log(sendData);
+        // debugLog(sendData);
     });
 }
 const deckNames = function () {
@@ -114,7 +121,7 @@ const deckNames = function () {
 
 
                 if (value == currentDeck) {
-                        counter++;
+                    counter++;
                     $('#deckList')
                         .append($("<option></option>")
                             .attr("value", value)
@@ -134,9 +141,9 @@ const deckNames = function () {
 
 
             });
-            // console.log(fulfilled);
+            // debugLog(fulfilled);
 
-            if (typeof currentDeck == "undefined"||counter==1) //no errors
+            if (typeof currentDeck == "undefined" || counter == 1) //no errors
             {
 
                 var value = $('#deckList').find("option:first-child").val();
@@ -151,7 +158,7 @@ const deckNames = function () {
             saveChanges("connectionStatus", "false");
             errorLogs.innerHTML = "<p>Connection Refused!!</p>This extension needs <a href='https://apps.ankiweb.net'>Anki</a> in background.<p>Please, run Anki.</p> Finally, please install <a href='https://ankiweb.net/shared/info/2055492159'> Anki connect plugin.</a> (if not installed).<br><p>Right click on these links to open</p>";
 
-            console.log(error);
+            debugLog(error);
 
         });
 };
@@ -161,7 +168,7 @@ const deckNames = function () {
 var modelNames = function () {
     ankiConnectRequest('modelNames', 6)
         .then(function (fulfilled) {
-            var counter =0;
+            var counter = 0;
             $.each(fulfilled.sort(), function (key, value) {
 
                 if (value == currentNoteType) {
@@ -183,10 +190,9 @@ var modelNames = function () {
 
 
             });
-            // console.log(fulfilled);
+            // debugLog(fulfilled);
             //Error
-            if (typeof currentNoteType == "undefined"||counter==1)
-            {
+            if (typeof currentNoteType == "undefined" || counter == 1) {
                 // if(counter==1)
                 // {
                 //     selectFirstElement("#modelList");
@@ -207,32 +213,32 @@ var modelNames = function () {
         .catch(function (error) {
             //Handle Error
 
-            console.log(error.message);
+            debugLog(error.message);
 
         });
 };
 
-function selectFirstElement(whatElement){
+// function selectFirstElement(whatElement) {
 
 
-    //select first and pass it//
-    $(whatElement+' option[selected="selected"]').each(
-        function() {
-            $(this).removeAttr('selected');
-        }
-    );
+//     //select first and pass it//
+//     $(whatElement + ' option[selected="selected"]').each(
+//         function () {
+//             $(this).removeAttr('selected');
+//         }
+//     );
 
 
-    // mark the first option as selected
-    $(whatElement+" option:first").attr('selected','selected');
-}
+// mark the first option as selected
+// $(whatElement + " option:first").attr('selected', 'selected');
+// }
 
 
 var getTags = function () {
     ankiConnectRequest('getTags', 6)
         .then(function (fulfilled) {
             availableTags = fulfilled;
-            // console.log(availableTags);
+            // debugLog(availableTags);
 
 
             function split(val) {
@@ -278,7 +284,7 @@ var getTags = function () {
         })
         .catch(function (error) {
             // log error
-            console.log(error.message);
+            debugLog(error.message);
         });
 };
 
@@ -288,7 +294,7 @@ var cardFields = function (item) {
     var params = {
         modelName: item
     };
-    // console.log(params);
+    // debugLog(params);
     ankiConnectRequest('modelFieldNames', 6, params)
         .then(function (fulfilled) {
             currentFields = fulfilled;
@@ -343,7 +349,7 @@ var cardFields = function (item) {
         })
         .catch(function (error) {
             //Handle Error
-            console.log(error.message);
+            debugLog(error.message);
 
         });
 };
@@ -351,13 +357,16 @@ var cardFields = function (item) {
 
 
 function getChanges(key) {
-    var valueReturn = [];
+    var valueReturn;
 
     chrome.storage.sync.get([key], function (result) {
-        // console.log('Value currently is ' + result[key]');
+        // debugLog('Value currently is ' + result[key]');
         valueReturn = result[key];
         if (typeof valueReturn != "undefined") {
             setValue(key, valueReturn);
+
+        } else {
+            debugLog(key + " is undefined or" + valueReturn);
         }
 
     });
@@ -367,19 +376,12 @@ function getChanges(key) {
 function setValue(key, valueReturn) {
     window[key] = valueReturn;
     // debugLog( window[key]);
-    console.log(key + valueReturn);
+    debugLog("key is" + key + "and value retreived" + valueReturn);
 
 }
 
 
-function debugLog(currentData) {
-    if (debugStatus == 1) {
-        console.log(currentData);
-    } else {
 
-
-    }
-}
 
 function init() {
     //grab deck names
@@ -519,7 +521,7 @@ function createDynamicFields() {
         var key = textareaId.replace("-Field", "");
 
         savedFormFields[key] = "" + editable.innerHTML + "";
-        console.log("savedFormFields +live save");
+        debugLog("savedFormFields +live save");
 
 
         saveChanges("savedFormFields", savedFormFields);
@@ -555,7 +557,7 @@ $(document).ready(function () {
 
     $('#modelList').change(function () {
         var value = $(this).val();
-        // console.log(value)
+        // debugLog(value)
         currentNoteType = value;
         saveChanges("currentNoteType", value);
         cardFields(value);
@@ -573,15 +575,23 @@ $(document).ready(function () {
         clearNotes();
 
     });
+    //delete extension
     $("#nukeExtension").click(function () {
         deleteExtension();
 
     });
+    
 
     $("#appendFields").click(function () {
         appendFields();
 
     });
+
+    $("#changeDebugMode").click(function () {
+        changeDebugMode();
+
+    });
+
 
     $("#reloadChromeMenu").click(function () {
         reloadExtension();
@@ -605,20 +615,19 @@ $(document).ready(function () {
 
 });
 
-function syncAnkiToAnkiWeb(){
+function syncAnkiToAnkiWeb() {
 
-        ankiConnectRequest('sync', 6)
-            .then(function (fulfilled) {
-               debugLog(fulfilled);
+    ankiConnectRequest('sync', 6)
+        .then(function (fulfilled) {
+            debugLog(fulfilled);
 
-            })
-            .catch(function (error) {
+        })
+        .catch(function (error) {
 
-            });
-
-
+        });
 
 }
+
 function submitToAnki() {
     //Getting Field types
     currentTags = $('#tags').val();
@@ -631,14 +640,14 @@ function submitToAnki() {
     }
 
     //replace tags
-    console.log("currenttags" + currentTags);
+    debugLog("currenttags" + currentTags);
     var counter = 0;
     var arrayToSend = {};
     var sendValue;
     saveChanges("addNote", "");
     $.each(currentFields, function (index, value) {
 
-        console.log(index + ": " + value);
+        debugLog(index + ": " + value);
         var textfieldValue = $('#' + value + '-Field').val();
         if (textfieldValue) {
 
@@ -652,34 +661,21 @@ function submitToAnki() {
         arrayToSend[value] = sendValue;
 
     });
-    console.log(arrayToSend);
+    debugLog(arrayToSend);
 
     if (counter === 0) {
-        if(connectionStatus=="false")
-        {
+        if (connectionStatus == "false") {
             notifyUser("Can't connect to Anki. Please check it", "notifyAlert");
 
 
-        }
-        else
-        {
-       notifyUser("All fields are empty", "notifyAlert");
+        } else {
+            notifyUser("All fields are empty", "notifyAlert");
 
 
         }
 
     } else {
-        //
-        // if(typeof currentDeck =="undefined"|| typeof currentNoteType=="undefined"||savedFormFields=="undefined")
-        // {
-        //     alert("one of the field is empty");
-        //     throw "One of the field is empty";
-        //
-        // }
-
-
-
-        var params = {
+         var params = {
             "note": {
                 "deckName": currentDeck,
                 "modelName": currentNoteType,
@@ -692,7 +688,7 @@ function submitToAnki() {
 
 
                 clearTextBoxes();
-                console.log(fulfilled);
+                debugLog(fulfilled);
 
                 notifyUser("Note added succesfully.", "notifyalert");
 
@@ -766,7 +762,7 @@ function createNotification(notificationTitle) {
         'ankiQuickAdder', {
             type: 'basic',
             iconUrl: 'icon-64.png',
-            title: manifestName + '' + manifestVersion,
+            title: manifestName + ' ' + manifestVersion,
             message: notificationTitle
         },
         //for future
@@ -795,9 +791,6 @@ function findRegex(findWhat, errorz) {
         }
     }
 
-
-
-
 }
 
 function clearTextBoxes() {
@@ -823,7 +816,7 @@ function clearTextBoxes() {
 //if context menu crashes
 function reloadExtension() {
     port.postMessage("reloadContextMenu");
-
+    notifyUser("reloaded the menu", "notifyAlert");
 
 }
 
@@ -831,14 +824,15 @@ function reloadExtension() {
 function appendFields() {
 
     //change append mode for context menu
-    if (appendModeSettings === 0 || typeof appendModeSettings == "undefined") {
-        saveChanges("appendModeSettings", 1);
+    var currentAppendMode;
+    if (appendModeSettings == "0" || typeof appendModeSettings == "undefined") {
+        saveChanges("appendModeSettings", "1");
         appendModeSettings = 1;
         currentAppendMode = "switched on for context menu";
 
     } else {
 
-        saveChanges("appendModeSettings", 0);
+        saveChanges("appendModeSettings", "0");
 
         appendModeSettings = 0;
         currentAppendMode = "switched off";
@@ -851,12 +845,35 @@ function appendFields() {
 
 }
 
+function changeDebugMode() {
+    //change append mode for context menu
+    var currentDebugMode;
+    if (debugStatus == "0" || typeof debugStatus == "undefined") {
+        saveChanges("debugStatus", "1");
+        debugStatus = 1;
+        currentDebugMode = "switched on to" + debugStatus;
+
+    } else {
+
+        saveChanges("debugStatus", "0");
+
+        debugStatus = 0;
+        currentDebugMode = "switched off";
+
+    }
+    settingsLog.innerHTML = "<p>Debug Mode: " + currentDebugMode + "</p>";
+    setTimeout(function () {
+        settingsLog.innerHTML = "";
+    }, 1000);
+
+}
+
 
 
 
 function deleteExtension() {
     chrome.management.uninstallSelf({}, function (callback) {
-        console.log("alfa cleared.Please install again");
+        debugLog("alfa cleared.Please install again");
     });
 
 
@@ -875,7 +892,7 @@ function saveChanges(key, value) {
     // Check that there's some code there.
     if (!value) {
 
-        console.log('Error: No value specified for' + key);
+        debugLog('Error: No value specified for' + key);
         return;
     }
 
@@ -885,8 +902,8 @@ function saveChanges(key, value) {
         [key]: value
     }, function () {
         //TODO: show to use for saved settings..
-        console.log('Settings saved for' + key + " and val below");
-        console.log(value);
+        debugLog('Settings saved for' + key + " and val below");
+        debugLog(value);
     });
 }
 
@@ -903,7 +920,7 @@ function clearNotes() {
             toRemove.push(index);
         });
 
-        console.log(toRemove);
+        debugLog(toRemove);
 
         // CHANGE: now inside callback
         chrome.storage.sync.remove(toRemove, function (Items) {
@@ -913,10 +930,59 @@ function clearNotes() {
             }, 750);
             chrome.storage.sync.get(function (Items) {
                 $.each(Items, function (index, value) {
-                    console.log("removed" + value);
+                    debugLog("removed" + value);
                 });
             });
         });
     });
 
 }
+
+debugLog = (function (undefined) {
+    var debugLog = Error; // does this do anything?  proper inheritance...?
+    debugLog.prototype.write = function (args) {
+
+        /// * https://stackoverflow.com/a/3806596/1037948
+
+        var suffix = {
+            "@": (this.lineNumber ?
+                    this.fileName + ':' + this.lineNumber + ":1" // add arbitrary column value for chrome linking
+                    :
+                    extractLineNumberFromStack(this.stack)
+            )
+        };
+
+        args = args.concat([suffix]);
+        // via @paulirish console wrapper
+        if (console && console.log) {
+            if (console.log.apply) {
+                console.log.apply(console, args);
+            } else {
+                console.log(args);
+            } // nicer display in some browsers
+        }
+    };
+    var extractLineNumberFromStack = function (stack) {
+
+
+        if (!stack) return '?'; // fix undefined issue reported by @sigod
+
+        // correct line number according to how Log().write implemented
+        var line = stack.split('\n')[2];
+        // fix for various display text
+        line = (line.indexOf(' (') >= 0 ?
+                line.split(' (')[1].substring(0, line.length - 1) :
+                line.split('at ')[1]
+        );
+        return line;
+    };
+
+    return function (params) {
+        // only if explicitly true somewhere
+        if (typeof debugStatus === typeof undefined || debugStatus == 0) return;
+
+        // call handler extension which provides stack trace
+        debugLog().write(Array.prototype.slice.call(arguments, 0)); // turn into proper array
+    }; //--  fn  returned
+
+})(); //--- _debugLog

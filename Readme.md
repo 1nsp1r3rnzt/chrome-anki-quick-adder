@@ -89,6 +89,24 @@ ___
 - 🔃 Create a new pull request using <a href="https://github.com/1nsp1r3rnzt/chrome-anki-quick-adder/compare/" target="_blank">`new pull request`</a>.
 
 ---
+## ChangeLog
+                                         Version 0.0.3 - Saturday, June 3nd, 2018
+                                        -----------------------------------------------------------------------------------------
+                                        - Fixed appendMode
+                                        - Added setting to turn on debugging.
+                                                 
+                                        Version 0.0.2 - Saturday, June 2nd, 2018
+                                        -----------------------------------------------------------------------------------------
+                                        - Fixed note adding error on windows and mac
+                                        
+                                        -----------------------------------------------------------------------------------------
+                                        Version 0.0.1 - Friday, June 1, 2018
+                                        -----------------------------------------------------------------------------------------
+                                        - Released beta version
+                                        -fixed deck selection for single decklist
+                                        -fixed deck selection for modelList
+                                        - parsed tags for autocomplete
+
 ## License
 
 - **[MIT license](/LICENSE)**

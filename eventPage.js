@@ -3,8 +3,8 @@ var currentFields;
 var currentNoteType;
 var savedFormFields = savedFormFields || [];
 var appendModeSettings;
-var noteSent =0;
-var debugMode =0;
+var noteSent = 0;
+var debugStatus;
 chrome.runtime.onInstalled.addListener(function (details) {
     if (details.reason == "install") {
         isInstalledNow();
@@ -21,26 +21,14 @@ function isInstalledNow() {
         win.close();
     }, 2000);
 
+    saveChanges("appendModeSettings", "1");
+    saveChanges("debugStatus", "0");
+    debugStatus = 1;
     chrome.runtime.openOptionsPage(function (details) {
         debugLog("opened options.page");
+
     });
 }
-
-function restore_options() {
-    getChanges("currentDeck");
-    getChanges("deckNames");
-    getChanges("currentNoteType");
-    getChanges("currentFields");
-    getChanges("savedFormFields");
-
-}
-function debugLog(debugData){
-    if(debugMode==1)
-    {
-        console.log(debugData);
-    }
-}
-document.addEventListener('DOMContentLoaded', restore_options);
 
 chrome.extension.onConnect.addListener(function (port) {
     // debugLog("popup connected");
@@ -59,6 +47,25 @@ chrome.extension.onConnect.addListener(function (port) {
     });
 });
 
+
+function restore_options() {
+    getChanges("debugStatus");
+    getChanges("currentDeck");
+    getChanges("deckNames");
+    getChanges("currentNoteType");
+    getChanges("currentFields");
+    getChanges("appendModeSettings");
+
+}
+
+$(document).ready(function () {
+
+    // ..
+    restore_options();
+    // ..
+
+});
+
 function fieldsSync() {
 
     return savedFormFields;
@@ -74,16 +81,18 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
             var currentFieldName = currentItem.replace(/secretFieldKey12z-/gi, "");
 
             debugLog(savedFormFields);
-            appendModeSettings = 1;
+
             if (appendModeSettings == 1) {
                 if (savedFormFields.hasOwnProperty(currentFieldName)) {
                     savedFormFields[currentFieldName] = savedFormFields[currentFieldName] + "<br>" + clickedData.selectionText;
 
-                } else {
-                    savedFormFields[currentFieldName] = clickedData.selectionText;
-
                 }
+            } else {
+
+                savedFormFields[currentFieldName] = clickedData.selectionText;
+
             }
+
 
 
         }
@@ -121,8 +130,8 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
     }
     //        workaround for submitting through chrome menu
     if (currentItem == "ankiSubmit") {
-         //workaround for using listner 1 time
-         noteSent=1;
+        //workaround for using listner 1 time
+        noteSent = 1;
         saveChanges("savedFormFields", savedFormFields);
         if (typeof savedFormFields != "undefined") {
             var win = window.open("popup.html", "extension_popup", "width=300,height=400,status=no,scrollbars=yes,resizable=no");
@@ -134,21 +143,18 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
             chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
                 if (message.data == "pageReadyForMessage") {
 
-                    if(noteSent===1)
-                    {
-                    chrome.runtime.sendMessage({
-                        data: "subMitData"
-                    }, function (response) {});
+                    if (noteSent === 1) {
+                        chrome.runtime.sendMessage({
+                            data: "subMitData"
+                        }, function (response) {});
 
 
-                }
-                else
-                    {
+                    } else {
 
                         chrome.runtime.onMessage.removeListener(arguments.callee);
                         // debugLog("listner removed");
                     }
-                noteSent =0;
+                    noteSent = 0;
                 }
 
             });
@@ -300,7 +306,7 @@ function createContextMenu() {
 chrome.storage.onChanged.addListener(function (changes, namespace) {
     for (var key in changes) {
         var storageChange = changes[key];
-        debugLog(key + "new value:" + storageChange.newValue);
+        debugLog("key:" + key + " new value:" + storageChange.newValue);
         if ("deckNames" == key) {
             deckNames = storageChange.newValue;
 
@@ -321,6 +327,11 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 
             currentNoteType = storageChange.newValue;
         }
+        if ("debugStatus" == key) {
+
+            debugStatus = storageChange.newValue;
+        }
+
 
         if ("currentDeck" == key) {
 
@@ -346,12 +357,7 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 
         if ("appendModeSettings" == key) {
 
-            if (storageChange.newValue == 1) {
-                appendModeSettings = 1;
-            } else {
-                appendModeSettings = 0;
-
-            }
+            appendModeSettings = storageChange.newValue;
         }
 
 
@@ -374,7 +380,6 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 
 function saveChanges(key, value) {
 
-    // Check that there's some code there.
     if (!value) {
         message('Error: No value specified');
         return;
@@ -409,3 +414,50 @@ function setValue(key, valueReturn) {
     debugLog(key + valueReturn);
 
 }
+debugLog = (function (undefined) {
+    var debugLog = Error; // does this do anything?  proper inheritance...?
+    debugLog.prototype.write = function (args) {
+
+        /// * https://stackoverflow.com/a/3806596/1037948
+        var suffix = {
+            "@": (this.lineNumber ?
+                    this.fileName + ':' + this.lineNumber + ":1" // add arbitrary column value for chrome linking
+                    :
+                    extractLineNumberFromStack(this.stack)
+            )
+        };
+
+        args = args.concat([suffix]);
+        // via @paulirish console wrapper
+        if (console && console.log) {
+            if (console.log.apply) {
+                console.log.apply(console, args);
+            } else {
+                console.log(args);
+            } // nicer display in some browsers
+        }
+    };
+    var extractLineNumberFromStack = function (stack) {
+
+        if (!stack) return '?'; // fix undefined issue reported by @sigod
+
+        // correct line number according to how Log().write implemented
+        var line = stack.split('\n')[2];
+        // fix for various display text
+        line = (line.indexOf(' (') >= 0 ?
+                line.split(' (')[1].substring(0, line.length - 1) :
+                line.split('at ')[1]
+        );
+        return line;
+    };
+
+    return function (params) {
+
+        // only if explicitly true somewhere
+        if (typeof debugStatus === typeof undefined || debugStatus == 0) return;
+
+        // call handler extension which provides stack trace
+        debugLog().write(Array.prototype.slice.call(arguments, 0)); // turn into proper array
+    }; //--  fn  returned
+
+})(); //--- _debugLog
