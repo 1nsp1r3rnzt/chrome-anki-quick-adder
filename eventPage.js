@@ -96,7 +96,6 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
                 }
             } else {
 
-            			alert(currentFieldName);
                 savedFormFields[currentFieldName] = clickedData.selectionText;
 
             }
