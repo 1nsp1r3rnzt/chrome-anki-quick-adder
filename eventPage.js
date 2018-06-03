@@ -87,8 +87,16 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
                     savedFormFields[currentFieldName] = savedFormFields[currentFieldName] + "<br>" + clickedData.selectionText;
 
                 }
+                else
+
+                {
+                    savedFormFields[currentFieldName] = clickedData.selectionText;
+
+                	
+                }
             } else {
 
+            			alert(currentFieldName);
                 savedFormFields[currentFieldName] = clickedData.selectionText;
 
             }

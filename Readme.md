@@ -90,7 +90,12 @@ ___
 
 ---
 ## ChangeLog
-                                         Version 0.0.3 - Saturday, June 3nd, 2018
+                                          Version 0.0.4 - Sunday, June 3nd, 2018
+                                        ---------------------------------------
+                                        - Fixed adding cards from context menu
+
+                                            --------------------------------------------------
+                                        Version 0.0.3 - Sunday, June 3nd, 2018
                                         -----------------------------------------------------------------------------------------
                                         - Fixed appendMode
                                         - Added setting to turn on debugging.
