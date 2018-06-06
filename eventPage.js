@@ -15,7 +15,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
         isInstalledNow();
     } else if (details.reason == "update") {
 
-        chrome.tabs.create({url: "https://codehealthy.com/ankiAdderUpdated?v=0.0.5"}, function (tab) {
+        chrome.tabs.create({url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"}, function (tab) {
             debugLog("update tab launched");
         });
     }
@@ -146,9 +146,9 @@ function isInstalledNow() {
         win.close();
     }, 2000);
 
-    chrome.runtime.openOptionsPage(function (details) {
-        debugLog("opened options.page");
 
+    chrome.tabs.create({url: "https://codehealthy.com/chrome-anki-quick-adder/#getting-started"}, function (tab) {
+        debugLog("update tab launched");
     });
 }
 

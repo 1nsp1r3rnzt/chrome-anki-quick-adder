@@ -90,7 +90,7 @@ ___
 
 ---
 ## ChangeLog
-                                           Version 0.0.5 - Sunday, June 6th, 2018
+                                           Version 0.0.5 - Wednesday, June 6th, 2018
                                         ---------------------------------------
                                         - shortcuts for: deck, model and Cloze
                                         - shortcuts for: adding selection to fields
