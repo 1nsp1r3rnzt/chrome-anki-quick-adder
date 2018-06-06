@@ -9,11 +9,11 @@
 ![main features](https://raw.githubusercontent.com/1nsp1r3rnzt/chrome-anki-quick-adder/master/docs/images/Add%20Cards%20Easily.png)
  
  ### features
- - [x] Ability to create anki cards directly from Google Chrome on your Anki
+ - [x] Ability to create Anki cards directly from Google Chrome on your Anki
    Desktop.
- - [x] Dropdown with all your tag for autocomplete feature.
+ - [x] Drop-down with all your tag for auto-complete feature.
  - [x] create card from chrome Menu Extension icon.
- - [x] Inline WYSIWYG editor.
+ - [x] In-line WYSIWYG editor.
 ## Demo
 
 ![demo](https://github.com/1nsp1r3rnzt/chrome-anki-quick-adder/blob/master/demo.gif?raw=true)
@@ -34,7 +34,7 @@
 
 ### Getting Started
 
-1. You can add cards through popup or chrome menu.
+1. You can add cards through pop-up or chrome menu.
 2. Please, select a deck and note type before adding cards for the first time.
 
 #### From Chrome Menu
@@ -51,7 +51,7 @@
 ![enter image description here](https://raw.githubusercontent.com/1nsp1r3rnzt/chrome-anki-quick-adder/master/docs/images/ankiStep1.png)
 
 1.  Run Anki. The decklist is populated then only.
-2. Click App icon to open app.
+2. Click App [icon][icon] to open app.
 3. Select Deck type.
 4. Select Card type.
 5.  Enter the data in fields.
@@ -64,8 +64,8 @@ ___
 | Bug           | Solution      | Reason  |
 | ------------- |:-------------:| -----:|
 | chrome Menu disappears      | ![enter image description here](https://raw.githubusercontent.com/1nsp1r3rnzt/chrome-anki-quick-adder/master/docs/images/no-menu.png) 1. Start Anki <br> 2. Goto extension settings. <br> 3. Settings> Click Rebuild Menu  | 1. Anki is not running.<br>2. Chrome was opened before running Anki |
-|  Duplicate Note. Note not Added.     | Change main field as Anki doesnot allow duplicate notes.   |   Note is already present in Anki |
-|  No notification on Mac on succesful card addition.   |   no solution yet |need mac  to test so not fixable yet.|
+|  Duplicate Note. Note not Added.     | Change main field as Anki doesn't allow duplicate notes.   |   Note is already present in Anki |
+|  No notification on Mac on successful card addition.   |   no solution yet |need mac  to test so not fixable yet.|
 ---
 
 ## Contributing
@@ -90,12 +90,20 @@ ___
 
 ---
 ## ChangeLog
-                                          Version 0.0.4 - Sunday, June 3nd, 2018
+                                           Version 0.0.5 - Sunday, June 6th, 2018
+                                        ---------------------------------------
+                                        - shortcuts for: deck, model and Cloze
+                                        - shortcuts for: adding selection to fields
+                                        - Cache for: decks, models and tags
+                                        - settings for: cleaning text
+                                        - Settings for: submit timeout from chrome menu
+
+                                          Version 0.0.4 - Sunday, June 3rd, 2018
                                         ---------------------------------------
                                         - Fixed adding cards from context menu
 
                                             --------------------------------------------------
-                                        Version 0.0.3 - Sunday, June 3nd, 2018
+                                        Version 0.0.3 - Sunday, June 3rd, 2018
                                         -----------------------------------------------------------------------------------------
                                         - Fixed appendMode
                                         - Added setting to turn on debugging.
@@ -110,7 +118,7 @@ ___
                                         - Released beta version
                                         -fixed deck selection for single decklist
                                         -fixed deck selection for modelList
-                                        - parsed tags for autocomplete
+                                        - parsed tags for auto-complete
 
 ## License
 

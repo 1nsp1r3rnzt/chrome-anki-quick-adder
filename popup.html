@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Anki Adder Chrome Extension</title>
@@ -11,14 +12,19 @@
     <link rel='stylesheet' href='spectrum.css' />
     <link rel="stylesheet" href="style.css" class="rel">
     <link rel="stylesheet" href="jquery-ui.css" class="rel">
-    <link rel="stylesheet" href="medium-editor/dist/css/medium-editor.css"> <!-- Core -->
-    <link rel="stylesheet" href="medium-editor/dist/css/themes/default.css"> <!-- or any other theme -->
+    <link rel="stylesheet" href="medium-editor/dist/css/medium-editor.css">
+    <!-- Core -->
+    <link rel="stylesheet" href="medium-editor/dist/css/themes/default.css">
+    <!-- or any other theme -->
 </head>
+
 <body>
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <body>
 
 
@@ -35,24 +41,37 @@
         <div class="ui-widget">
             <div id="errorLogs"></div>
 
-            <form action="">
-                Current Deck:
-                <div class="select-style">
-                <select id="deckList"></select>
-                </div>
-                <p>Note Type:</p>
-                <div class="select-style">
 
-                    <select id="modelList">  </select></div>
+            <p> Current Deck:<button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshDecks">
+                <img src="docs/images/refresh.png">
+            </button></p>
+
+
+            <div class="select-style">
+                <select id="deckList"></select>
+            </div>
+            <p>Note Type: <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshModel">
+                <img src="docs/images/refresh.png">
+            </button></p>
+
+            <div class="select-style">
+
+                <select id="modelList">  </select></div>
 
 
             <h2> Add Card</h2>
+            <form id="form1">
+
                 <div id="addCard">
-                    <label for="Default-Front-field">Front:</label> <textarea type="text" name="front" class="editable" id="Default-Front-field"></textarea><br>
-                    <label for="Default-Back-field">Back:</label>  <textarea type="text" name="back" class="editable" id="Default-Back-Field"></textarea><br>
+                    <label for="Default-Front-field">Front:</label> <textarea name="front" class="editable" id="Default-Front-field"></textarea><br>
+                    <label for="Default-Back-field">Back:</label> <textarea name="back" class="editable" id="Default-Back-Field"></textarea><br>
                 </div>
-            <label for="tags">Tags: </label>
-            <input id="tags" size="45">
+                <label for="tags">Tags: </label><button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshTags">
+                <img src="docs/images/refresh.png">
+            </button> <br>
+                <input id="tags" size="45">
+                <br>
+
                 <input type="button" id="resetButton" value="Reset">
 
                 <input type="submit" value="Add Note">
@@ -64,21 +83,111 @@
 
         <table style="width:100%">
             <tr>
-                <td>Clear all Settings</td>
-                <td><input type="button" id="clearAllDefaults" value="Delete"></td>
 
             </tr>
             <tr>
-                <td><p>Append: Append fields data from chrome menu instead of overwrite.
-                </p>
+                <td>Sync Fields: <br>Manual: caches &
+                    <img src="docs/images/refresh.png"/> to refresh
+                    <br> Live: Auto update Decks List</td>
+                <td>
+                    <div class="select-style"> <select id="syncSetting">
+                        <option value="Live">Live Sync</option>
+                        <option value="Manual">Manual</option>
+
+                    </select></div>
+                </td>
+
+            </tr>
+            <tr></tr>
+            <tr>
+                <td>
+                    Timeout: <br>For context menu Submit:<br>Increase for slow computer
+
+                </td>
+                <td>
+                    <div class="select-style"> <select id="timeOutReload">
+                        <option value="1000">1 second</option>
+                        <option value="1500">1.5 seconds</option>
+                        <option value="2000">2 seconds</option>
+                        <option value="2500">2.5 seconds</option>
+                        <option value="3000">3 seconds</option>
+                        <option value="3500">3.5 seconds</option>
+                        <option value="4000">4 seconds</option>
+                        <option value="4500">4.5 seconds</option>
+                        <option value="5000">5 seconds</option>
+                        <option value="5500">5.5 seconds</option>
+                        <option value="6000">6 seconds</option>
+                    </select>
+                    </div>
+                </td>
+
+            </tr>
+            <tr>
+                <td>
+                   Favourite Deck:
+
+                </td>
+                <td>
+                    <div class="select-style"> <select id="FavouriteDeck">
+
+                    </select>
+                    </div>
+                </td>
+
+            </tr>
+            <tr>
+                <td>
+                    Favourite Model:
+
+                </td>
+                <td>
+                    <div class="select-style"> <select id="FavouriteModel">
+
+                    </select>
+                    </div>
+                </td>
+
+            </tr>
+            <tr>
+                <td>
+                    paste Plain text:
+
+                </td>
+                <td>
+                    <div class="select-style"> <select id="forcePlainText">
+                        <option value="false">False</option>
+                        <option value="true">True</option>
+                    </select>
+                    </div>
+                </td>
+
+            </tr>
+            <tr>
+                <td>
+                    Clean pasted Html
+
+                </td>
+                <td>
+                    <div class="select-style"> <select id="cleanPastedHTML">
+                        <option value="false">False</option>
+                        <option value="true">True</option>
+                    </select>
+                    </div>
+                </td>
+
+            </tr>
+            <tr>
+                <td>
+                    <p>Append: Append fields data from chrome menu instead of overwrite.
+                    </p>
                 </td>
                 <td><input type="button" id="appendFields" value="Change"> </td>
 
             </tr>
             <!--beta testing-->
             <!--<tr>-->
-                <!--<td>Delete Extension!!</td>-->
-                <!--<td><input type="button" id="nukeExtension" value="Nuke it"></td>-->
+            <!--<td>Delete Extension!!</td>-->
+            <!--<td><input type="button" id="nukeExtension" value="Nuke it"></td>-->
 
             <!--</tr>-->
             <tr>
@@ -87,17 +196,24 @@
 
             </tr>
             <tr>
-                <td><p>Debug: Turn console debug on or off
-                </p>
+                <td>
+                    <p>Debug: Turn console debug on or off
+                    </p>
                 </td>
                 <td><input type="button" id="changeDebugMode" value="Change Mode"> </td>
 
             </tr>
             <tr>
-            <td>Sync Anki Desktop to AnkiWeb(Opens Anki Desktop)</td>
-            <td><input type="button" id="syncAnkiToWeb" value="Start Sync"></td>
+                <td>Sync Anki Desktop to AnkiWeb(Opens Anki Desktop)</td>
+                <td><input type="button" id="syncAnkiToWeb" value="Start Sync"></td>
 
             </tr>
+            <tr>
+                <td>Clear all Settings & Restore defaults</td>
+                <td><input type="button" style="background: #000;" id="clearAllDefaults" value="Default"></td>
+
+            </tr>
+
         </table>
         <hr>
         <div id="settingsLog"></div>
@@ -109,6 +225,11 @@
 
 
         <table style="width:100%">
+            <tr>
+                <td> Full Documentation:</td>
+                <td> <a href="https://codehealthy.com/chrome-anki-quick-adder/#getting-started">Read documentation (Right click)</a> </td>
+            </tr>
+
             <tr>
                 <td> Credits:</td>
                 <td>Icon made by <a href="https://www.flaticon.com/authors/freepik">freepik</a> from www.flaticon.com </td>
@@ -125,9 +246,10 @@
 
             </tr>
             <tr>
-                    <td></td>
-          <td><a href="https://github.com/FooSoft/anki-connect">AnkiConnect</a></td>
+                <td></td>
+                <td><a href="https://github.com/FooSoft/anki-connect">AnkiConnect</a></td>
             </tr>
+
         </table>
 
     </div>
@@ -136,8 +258,10 @@
 
 
 </body>
+
 </html>
 
 
 </body>
+
 </html>

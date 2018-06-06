@@ -10,7 +10,8 @@
   "permissions": [
     "storage",
     "notifications",
-    "contextMenus"
+    "contextMenus",
+    "<all_urls>"
   ],
   "browser_action": {
     "default_icon": "icon-64.png",
@@ -26,7 +27,39 @@
   "web_accessible_resources": [
     "icon-64.png"
   ],
-  "options_page": "docs/index.html",
+  "commands": {
+    "add-to-first-field": {
+      "suggested_key": {
+        "default": "Alt+Shift+1",
+        "mac": "Command+Shift+1"
+      },
+      "description": "Add select Text to first Field"
+    },
+
+    "add-to-second-field": {
+      "suggested_key": {
+        "default": "Alt+Shift+2",
+        "windows": "Alt+Shift+2",
+        "mac": "Alt+Shift+2"
+      },"description": "Add select Text to second Field"
+    },
+    "add-to-third-field": {
+      "suggested_key": {
+        "default": "Alt+Shift+3",
+        "windows": "Alt+Shift+3",
+        "mac": "Alt+Shift+3"
+      },"description": "Add select Text to third Field"
+    },
+
+    "submit-data-to-popup": {
+      "suggested_key": {
+        "default": "Alt+Shift+4",
+        "windows": "Alt+Shift+4",
+        "mac": "Alt+Shift+4"
+      },
+      "description": "Submit Data"
+    }
+  },
 
   "manifest_version": 2
   }
