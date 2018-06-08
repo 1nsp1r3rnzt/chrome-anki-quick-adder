@@ -39,7 +39,6 @@
 
 
         <div class="ui-widget">
-            <div id="errorLogs"></div>
 
 
             <p> Current Deck:<button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshDecks">
@@ -76,7 +75,12 @@
 
                 <input type="submit" value="Add Note">
             </form>
+
         </div>
+        <div id="errorLogs">
+            <hr>
+        </div>
+
     </div>
 
     <div id="tabs-2">
@@ -87,7 +91,7 @@
             </tr>
             <tr>
                 <td>Sync Fields: <br>Manual: caches &
-                    <img src="docs/images/refresh.png"/> to refresh
+                    <img src="docs/images/refresh.png" /> to refresh
                     <br> Live: Auto update Decks List</td>
                 <td>
                     <div class="select-style"> <select id="syncSetting">
@@ -99,40 +103,17 @@
 
             </tr>
             <tr></tr>
-            <tr>
-                <td>
-                    Timeout: <br>For context menu Submit:<br>Increase for slow computer
 
-                </td>
-                <td>
-                    <div class="select-style"> <select id="timeOutReload">
-                        <option value="1000">1 second</option>
-                        <option value="1500">1.5 seconds</option>
-                        <option value="2000">2 seconds</option>
-                        <option value="2500">2.5 seconds</option>
-                        <option value="3000">3 seconds</option>
-                        <option value="3500">3.5 seconds</option>
-                        <option value="4000">4 seconds</option>
-                        <option value="4500">4.5 seconds</option>
-                        <option value="5000">5 seconds</option>
-                        <option value="5500">5.5 seconds</option>
-                        <option value="6000">6 seconds</option>
-                    </select>
-                    </div>
-                </td>
+            <td>
+                Favourite Deck:
 
-            </tr>
-            <tr>
-                <td>
-                   Favourite Deck:
+            </td>
+            <td>
+                <div class="select-style"> <select id="FavouriteDeck">
 
-                </td>
-                <td>
-                    <div class="select-style"> <select id="FavouriteDeck">
-
-                    </select>
-                    </div>
-                </td>
+                </select>
+                </div>
+            </td>
 
             </tr>
             <tr>

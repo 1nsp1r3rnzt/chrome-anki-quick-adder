@@ -4,23 +4,34 @@ var savedFormFields = savedFormFields || [];
 var appendModeSettings;
 var noteSent = 0;
 var debugStatus;
-var submitMenuPop;
 var currentDeck;
 var deckNamesSaved;
 var syncFrequency;
 var manifest = chrome.runtime.getManifest();
+var onceTimeForceSync;
+var currentTags;
+var connectionStatus;
+var modelNamesSaved;
+var storedFieldsForModels = storedFieldsForModels || {};
+var editor;
+var allSettings = {};
+
+
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+    if (message.action == "wakeup") {
+
+    }
+});
 
 chrome.runtime.onInstalled.addListener(function (details) {
     if (details.reason == "install") {
         isInstalledNow();
     } else if (details.reason == "update") {
 
-        chrome.tabs.create({url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"}, function (tab) {
-            debugLog("update tab launched");
-        });
+        isUpdatedNow();
     }
 });
-var timeOutReload = 2000;
+
 /* The function that finds and returns the selected text */
 var funcToInject = function () {
     var selection = window.getSelection();
@@ -45,66 +56,58 @@ chrome.commands.onCommand.addListener(function (cmd) {
             } else if ((selectedTextPerFrame.length > 0) && (typeof (selectedTextPerFrame[0]) === 'string')) {
                 /* The results are as expected */
                 if (selectedTextPerFrame[0]) {
-                   try{
+                    try {
 
-                       var fieldToAdd;
-                       var currentText = selectedTextPerFrame[0];
+                        var fieldToAdd;
+                        var currentText = selectedTextPerFrame[0];
 
-                       if (cmd == "add-to-first-field") {
-                           fieldToAdd = 0;
+                        if (cmd == "add-to-first-field") {
+                            fieldToAdd = 0;
 
-                       } else if (cmd == "add-to-second-field") {
-                           fieldToAdd = 1;
+                        } else if (cmd == "add-to-second-field") {
+                            fieldToAdd = 1;
 
-                       } else if (cmd == "add-to-third-field") {
-                           fieldToAdd = 2;
+                        } else if (cmd == "add-to-third-field") {
+                            fieldToAdd = 2;
 
-                       }
-                       if(currentText.length<30)
-                       {
-                           displayText = currentText;
-                       }
-                       else
-                       {
-                           displayText = currentText.slice(0,30)+"...";
+                        }
+                        if (currentText.length < 30) {
+                            displayText = currentText;
+                        } else {
+                            displayText = currentText.slice(0, 30) + "...";
 
-                       }
+                        }
 
-                       var currentFieldName = currentFields[fieldToAdd];
+                        var currentFieldName = currentFields[fieldToAdd];
 
-                       if (typeof currentFieldName != "undefined") {
+                        if (typeof currentFieldName != "undefined") {
 
 
-                           if (appendModeSettings === 1) {
-                               if (savedFormFields.hasOwnProperty(currentFieldName)) {
-                                   savedFormFields[currentFieldName] = savedFormFields[currentFieldName] + "<p></p>" + currentText;
-                                   createNotification("Appended: "+displayText+" to field: " + currentFieldName);
+                            if (appendModeSettings == 1) {
+                                if (savedFormFields.hasOwnProperty(currentFieldName)) {
+                                    savedFormFields[currentFieldName] = savedFormFields[currentFieldName] + "<p></p>" + currentText;
+                                    createNotification("Appended: " + displayText + " to field: " + currentFieldName);
 
-                               } else
+                                } else
 
-                               {
-                                   savedFormFields[currentFieldName] = currentText;
-                                   createNotification("Added: "+displayText+" to field: " + currentFieldName);
-
-
-                               }
-                           } else {
-
-                               savedFormFields[currentFieldName] = currentText;
-                               createNotification("Added: "+displayText+" to field: " + currentFieldName);
-
-                           }
-                       } else {
-                           createNotification("Sorry, No Field number " + (fieldToAdd + 1) + " for Model:"+currentNoteType);
+                                {
+                                    savedFormFields[currentFieldName] = currentText;
+                                    createNotification("Added: " + displayText + " to field: " + currentFieldName);
 
 
-                       }
-                       console.log(currentFields);
-                   }
+                                }
+                            } else {
+
+                                savedFormFields[currentFieldName] = currentText;
+                                createNotification("Added: " + displayText + " to field: " + currentFieldName);
+
+                            }
+                        } else {
+                            createNotification("Sorry, No Field number " + (fieldToAdd + 1) + " for Model:" + currentNoteType);
 
 
-                catch(e)
-                    {
+                        }
+                    } catch (e) {
                         debugLog(e);
                         createNotification("Error: please open Anki, then extension pop to sync.");
                     }
@@ -126,18 +129,165 @@ chrome.commands.onCommand.addListener(function (cmd) {
 });
 
 
+function ankiConnectRequest(action, version, params = {}) {
+    return new Promise((resolve, reject) => {
+        if (((typeof window[action + "Saved"] != "undefined") && (syncFrequency == "Manual" || onceTimeForceSync === 0)) && ((action != "sync") || (action != "addNote"))) {
+            resolve(window[action + "Saved"]);
+
+        } else {
+            const xhr = new XMLHttpRequest();
+            xhr.addEventListener('error', () => reject('failed to connect to AnkiConnect'));
+            xhr.addEventListener('load', () => {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        throw response.error;
+                    } else {
+                        if (response.hasOwnProperty('result')) {
+
+
+                            if (response.result) {
+                                resolve(response.result);
+                                saveChanges(action + "Saved", response.result);
+
+                            } else {
+                                throw response.error;
+                            }
+
+
+                        } else {
+                            reject('failed to get results from AnkiConnect');
+                        }
+                    }
+                } catch (e) {
+                    reject(e);
+                }
+            });
+
+            xhr.open('POST', 'http://127.0.0.1:8765');
+            var sendData = JSON.stringify({
+                action,
+                version,
+                params
+            });
+
+            xhr.send(sendData);
+            // debugLog(sendData);
+        }
+    });
+}
+
+
+
+function notifyUser(notifyContent, notificationType) {
+    var notifyString = JSON.stringify(notifyContent);
+
+    if (notificationType == "notifyalert" || notificationType == "notifyAlert") {
+
+
+        try {
+            createNotification(notifyString);
+
+        } catch (err) {
+            alert(notifyString);
+
+        }
+
+    } else if (notificationType == "alert") {
+        alert(notifyString);
+    } else if (notificationType == "notify") {
+
+        createNotification(notifyString);
+
+
+    } else {
+        return;
+    }
+
+}
+
+function createNotification(notificationTitle) {
+    var manifestName;
+
+    var manifestVersion;
+
+    if (typeof manifestName == "undefined") {
+        manifestName = "Anki Quick Adder";
+
+    } else {
+        manifestName = manifest.name;
+
+
+    }
+    if (typeof manifestVersion == "undefined") {
+        manifestVersion = manifest.version;
+    } else {
+        manifestVersion = "1.00";
+
+    }
+    chrome.notifications.create(
+        'ankiQuickAdder', {
+            type: 'basic',
+            iconUrl: 'icon-64.png',
+            title: manifestName + ' ' + manifestVersion,
+            message: notificationTitle
+        },
+        function () {
+
+        }
+
+    );
+
+}
+
+function findRegex(findWhat, errorz) {
+
+
+    let attributes = "gi";
+    var txtToFind = new RegExp(findWhat, attributes);
+
+    if (!findWhat) {
+        return false;
+    } else if (errorz === null) {
+        return false;
+
+    } else {
+
+        if ((errorz.match(txtToFind))) {
+            return true;
+        } else {
+            return false;
+
+
+        }
+    }
+
+}
+
 document.addEventListener('DOMContentLoaded', restore_options);
 
-//installed feaults
+
+
+//updated
+function isUpdatedNow(){
+    saveChanges("syncFrequency", "Manual");
+
+    chrome.tabs.create({
+        url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"
+    }, function (tab) {
+        debugLog("update tab launched");
+    });
+
+}
+//installed defaults
 function isInstalledNow() {
     saveChanges("appendModeSettings", "1");
-    saveChanges("debugStatus", "1");
+    saveChanges("debugStatus", "0");
     saveChanges("syncFrequency", "Manual");
-    saveChanges("timeOutReload", "2000");
     var allSettings = {};
-    allSettings.forcePlainText="true";
-    allSettings.cleanPastedHTML= "true";
-    saveChanges("allSettings",allSettings);
+    allSettings.forcePlainText = "true";
+    allSettings.cleanPastedHTML = "true";
+    saveChanges("allSettings", allSettings);
 
     debugStatus = 1;
     var win = window.open("popup.html", "extension_popup", "width=300,height=400,status=no,scrollbars=yes,resizable=no");
@@ -147,7 +297,9 @@ function isInstalledNow() {
     }, 2000);
 
 
-    chrome.tabs.create({url: "https://codehealthy.com/chrome-anki-quick-adder/#getting-started"}, function (tab) {
+    chrome.tabs.create({
+        url: "https://codehealthy.com/chrome-anki-quick-adder/#getting-started"
+    }, function (tab) {
         debugLog("update tab launched");
     });
 }
@@ -171,14 +323,19 @@ chrome.extension.onConnect.addListener(function (port) {
 
 
 function restore_options() {
-    getChanges("debugStatus");
+    getChanges("connectionStatus");
+    getChanges("favourites");
+    getChanges("deckNamesSaved");
+    getChanges("syncFrequency"); //default
+    getChanges("debugStatus"); //default
     getChanges("currentDeck");
     getChanges("currentNoteType");
     getChanges("currentFields");
-    getChanges("appendModeSettings");
-    getChanges("connectionStatus");
-    getChanges("syncFrequency");
-
+    getChanges("storedFieldsForModels");
+    getChanges("appendModeSettings"); //default
+    getChanges("modelNamesSaved");
+    getChanges("getTagsSaved");
+    getChanges("allSettings");
 
 }
 
@@ -264,51 +421,91 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
 
 
 function submitToAnki() {
-
-    //workaround for using listener 1 time
-    noteSent = 1;
     saveChanges("savedFormFields", savedFormFields);
-    if (typeof savedFormFields != "undefined") {
-        submitMenuPop = window.open("popup.html", "extension_popup", "width=300,height=400,status=no,scrollbars=yes,resizable=no");
+    if (typeof currentFields != "undefined") {
+        currentTags = "";
+        var counter = 0;
+        var arrayToSend = {};
+        var sendValue;
+        $.each(currentFields, function (index, value) {
 
-        chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-            if (message.data == "pageReadyForMessage") {
+            try {
+                textfieldValue = savedFormFields[value];
+                if (typeof textfieldValue != "undefined" || textfieldValue != "<p><br></p>") {
+                    sendValue = textfieldValue;
+                    counter++;
+                } else {
 
-                if (noteSent === 1) {
-                    chrome.runtime.sendMessage({
-                        data: "subMitData"
-                    }, function (response) {
-
-
-                    });
-
-
+                    sendValue = "";
                 }
-
-            } else if (message.data == "submissionDone") {
-                if (noteSent == 1) {
-
-                    if (timeOutReload > 6500) {
-                        timeOutReload = 2000;
-
-                    }
-                    setTimeout(function () {
-                        submitMenuPop.close();
-                    }, timeOutReload);
-                    chrome.runtime.onMessage.removeListener(arguments.callee);
-                    debugLog("listener removed");
-                    noteSent = 0;
-                }
-
+            } catch (error) {
+                sendValue = "";
+                notifyUser("Please edit your card. Can't parse ID" + value);
             }
-            // else {
-            //
-            //
-            // }
+
+
+            arrayToSend[value] = sendValue;
 
         });
-    } else {
-        debugLog("cant read fields");
+        debugLog(arrayToSend);
+
+        if (counter === 0) {
+
+            if (connectionStatus == "false") {
+                notifyUser("Can't connect to Anki. Please check it", "notifyAlert");
+
+
+            } else {
+                notifyUser("All fields are empty", "notifyAlert");
+
+            }
+
+
+        } else {
+            var params = {
+                "note": {
+                    "deckName": currentDeck,
+                    "modelName": currentNoteType,
+                    "fields": arrayToSend,
+                    "tags": [currentTags]
+                }
+            };
+            ankiConnectRequest("addNote", 6, params)
+                .then(function (fulfilled) {
+
+                    savedFormFields = [];
+                    saveChanges("savedFormFields", savedFormFields);
+                    notifyUser("Note is added succesfully.", "notifyalert");
+
+
+                })
+                .catch(function (error) {
+
+                    {
+                        //notification for error
+                        var currentError = JSON.stringify(error);
+                        if (findRegex("Note is duplicate", currentError)) {
+                            notifyUser("This is a duplicate Note. Please change main field and try again", "notifyalert");
+
+                        } else if (findRegex("Collection was not found", currentError)) {
+                            notifyUser("Collection was not found", "notifyalert");
+
+                        } else if (findRegex("Note was empty", currentError)) {
+                            notifyUser("Note or front field was empty", "notifyalert");
+
+                        } else if (findRegex("Model was not found", currentError)) {
+                            notifyUser("Model was not found.Please create model:" + currentNoteType, "notifyalert");
+
+                        } else if (findRegex("Deck was not found", currentError)) {
+                            notifyUser("Deck was not found.Please create Deck:" + currentDeck, "notifyalert");
+
+                        } else {
+                            notifyUser("Error: " + error, "notifyalert");
+                        }
+                    }
+                });
+        }
+
     }
 }
 
@@ -492,6 +689,16 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
             deckNamesSaved = storageChange.newValue;
 
         }
+
+        if ("modelNamesSaved" == key) {
+            modelNamesSaved = storageChange.newValue;
+
+        }
+
+        if ("getTagsSaved" == key) {
+            getTagsSaved = storageChange.newValue;
+
+        }
         if ("currentFields" == key) {
             //clear saved forms..
             savedFormFields = [];
@@ -535,10 +742,6 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 
 
         }
-        if ("timeOutReload" == key) {
-            timeOutReload = storageChange.newValue;
-        }
-
 
         if ("syncFrequency" == key) {
 
@@ -656,38 +859,3 @@ debugLog = (function (undefined) {
     }; //--  fn  returned
 
 })(); //--- _debugLog
-
-
-function createNotification(notificationTitle) {
-    var manifestName;
-
-    var manifestVersion;
-
-    if (typeof manifestName == "undefined") {
-        manifestName = "Anki Quick Adder";
-
-    } else {
-        manifestName = manifest.name;
-
-
-    }
-    if (typeof manifestVersion == "undefined") {
-        manifestVersion = manifest.version;
-    } else {
-        manifestVersion = "1.00";
-
-    }
-    chrome.notifications.create(
-        'ankiQuickAdder', {
-            type: 'basic',
-            iconUrl: 'icon-64.png',
-            title: manifestName + ' ' + manifestVersion,
-            message: notificationTitle
-        },
-        function () {
-
-        }
-
-    );
-
-}
