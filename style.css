@@ -1,6 +1,6 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
-    min-width: 360px;
+    min-width: 400px;
     min-height: 460px;
 }
 
@@ -55,7 +55,7 @@ form p{
     font-size: 12px;
     margin-bottom:1px;
 }
-.select-style {
+.select-style, #select2-selection {
     padding: 0;
     margin: 0;
     border: 1px solid #ccc;
@@ -81,6 +81,9 @@ form p{
     border-width: 5px;
     margin-top: -2px;
     z-index: 100;
+}
+.select2-container {
+    width: 100% !important;
 }
 
 .select-style select {

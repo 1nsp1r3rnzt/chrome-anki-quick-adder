@@ -98,27 +98,15 @@ const deckNames = function () {
 
 
                 }
-                //    create favs
-                if (value == favourites.deck) {
-                    $('#FavouriteDeck')
-                        .append($("<option></option>")
-                            .attr("value", value)
-                            .attr('selected', 'selected')
-                            .text(textFieldValue));
 
-
-                } else {
                     $('#FavouriteDeck')
                         .append($("<option></option>")
                             .attr("value", value)
                             .text(textFieldValue));
-
-
-                }
 
 
             });
-            // debugLog(fulfilled);
+
 
             if (typeof currentDeck == "undefined" || counter == 1 || currentDeck == "noCurrentDeck") //Deal with errors
             {
@@ -624,6 +612,8 @@ $(document).ready(function () {
     init();
     //create tabs
     $("#tabs").tabs();
+    $('.multipleSelect2').select2();
+    //multiple selection for decks and cloze
 
 
     //restore settings state when user click setting page
@@ -636,6 +626,11 @@ $(document).ready(function () {
         $('#forcePlainText option[value=' + allSettings.forcePlainText + ']').attr('selected', 'selected');
 
         $('#cleanPastedHTML option[value=' + allSettings.cleanPastedHTML + ']').attr('selected', 'selected');
+       console.log(favourites.deck);
+        $('#FavouriteDeck').val(favourites.deck);
+        $('#FavouriteDeck').trigger('change');
+        $('#FavouriteModel').val(favourites.model);
+        $('#FavouriteModel').trigger('change');
 
 
     });
@@ -651,16 +646,27 @@ $(document).ready(function () {
     }
     //Monitors currentDeck value.
     $('#FavouriteDeck').change(function () {
-        var value = $(this).val();
-        favourites.deck = value;
-        saveChanges("favourites", favourites);
+        var value = $(this).select2('data');
+        currentFav = [];
+        for(item of value)
+        {
+            currentFav.push(item.id);
+        }
+        favourites.deck = currentFav;
+
+      saveChanges("favourites", favourites);
 
     });
     $('#FavouriteModel').change(function () {
-        var value = $(this).val();
-        favourites.model = value;
-        saveChanges("favourites", favourites);
+        var value = $(this).select2('data');
+        var currentFav = [];
+        for(item of value)
+        {
+            currentFav.push(item.id);
+        }
+        favourites.model = currentFav;
 
+        saveChanges("favourites", favourites);
     });
 
     $('#deckList').change(function () {
@@ -679,7 +685,9 @@ $(document).ready(function () {
         saveChanges("currentNoteType", value);
         cardFields(value);
         //clear saved Setting on background.js
-        clearTextBoxes();
+        //  clearTextBoxes();
+
+
 
     });
 
@@ -857,51 +865,74 @@ $(document).ready(function () {
 
     });
 
-    //    keypresses shortcut
-    const multipleKeypress = (function ($document) {
-        // Map of keys which are currently down.
-        const keymap = {};
-        // Update keymap on keydown and keyup events.
-        $document.on(
-            "keydown keyup"
-            // If the key is down, assign true to the corresponding
-            // propery of keymap, otherwise assign false.
-            , event => keymap[event.keyCode] = event.type === "keydown"
-        );
-        // The actual function.
-        // Takes listener as the first argument,
-        // rest of the arguments are key codes.
-        return (listener, ...keys) =>
-            $document.keydown(() => {
-                // Check if every of the specified keys is down.
-                if (keys.every(key => keymap[key]))
-                    listener(event);
-            });
-        // Pass a jQuery document object to cache it.
-    }($(document)));
+
+    Mousetrap.bind('alt+shift+d', function(e)
+    {
+        selectFavourite(favourites.deck, "#deckList", "currentDeck");
+    });
+
+    Mousetrap.prototype.stopCallback = function(e, element, combo, sequence) {
+        var self = this;
+
+        if (self.paused) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+    };
+    var keyz = 'alt+shift+c';
+
+    Mousetrap.bind(keyz, function(e)
+    {
+        selectFavourite(favourites.model, "#modelList", "currentNoteType");
+    });
+    Mousetrap.bind('alt+shift+w', function(e)
+    {
+        selectCloze();
+
+    });
+    Mousetrap.bind('ctrl+enter', function(e)
+    {
+        submitToAnki();
+    });
 
 
-    //alt+shift+d
-    multipleKeypress(() => selectFavourite(favourites.deck, "#deckList", "currentDeck"), 18, 16, 68);
-    //alt+shift+c
-    multipleKeypress(() => selectFavourite(favourites.model, "#modelList", "currentNoteType"), 18, 16, 67);
-    //alt+shift+w
-    multipleKeypress(() => selectCloze(), 18, 16, 87);
-    //ctrl+enter for submitting
-    multipleKeypress(() => submitToAnki(), 17, 13);
 
 
     function selectFavourite(optionValue, whatElement, type) {
 
 
         //find element select
-        var value = $(whatElement).find('option[value="' + optionValue + '"]').val();
+
+        var value;
         var currentSelected;
+        var counter;
         //if element, change and save it
+        var favToSelect;
         if (type == "currentDeck") {
             currentSelected = currentDeck;
+            if(typeof favourites.deckCounter=="undefined"||favourites.deckCounter >=favourites.deck.length)
+            {
+                favourites.deckCounter  = 0;
+
+            }
+            console.log(favourites);
+            favToSelect =   favourites.deck[favourites.deckCounter];
+            favourites.deckCounter  = favourites.deckCounter+1;
+             console.log(favToSelect);
+            value  = $(whatElement).find('option[value="' + favToSelect + '"]').val();
         } else {
             currentSelected = currentNoteType;
+            if(typeof favourites.modelCounter=="undefined"||favourites.modelCounter >=favourites.model.length)
+            {
+                favourites.modelCounter  = 0;
+
+            }
+            favToSelect =   favourites.model[favourites.modelCounter];
+            favourites.modelCounter  = favourites.modelCounter+1;
+            value  = $(whatElement).find('option[value="' + favToSelect + '"]').val();
         }
         if (value) {
             if (value != currentSelected) {
@@ -911,7 +942,7 @@ $(document).ready(function () {
                     }
                 );
 
-                $(whatElement).val(optionValue).change();
+                $(whatElement).val(favToSelect).change();
                 // currentDeck = value;
                 // saveChanges()
                 debugLog(whatElement + " Selected");
@@ -922,12 +953,13 @@ $(document).ready(function () {
 
 
         {
-            notifyError("The setting for fav: " + type + " in list. Update, favourite settings");
+            notifyError("No " + type + "is selected as favourite. Please, select in settings");
         }
 
     }
 
 });
+
 
 function selectCloze() {
 
@@ -945,8 +977,14 @@ function selectCloze() {
 
         });
 
-        if (presentClozes.sort().slice(-1)[0]) {
-            clozeNumber = parseInt(presentClozes.sort().slice(-1)[0]) + 1;
+        if (presentClozes.sort(function(a,b)
+        {
+            return a-b;
+        }).slice(-1)[0]) {
+            clozeNumber = parseInt(presentClozes.sort(function(a,b)
+            {
+                return a-b;
+            }).slice(-1)[0]) + 1;
 
         } else {
             clozeNumber = "1";
@@ -958,28 +996,128 @@ function selectCloze() {
         } else if (document.selection && document.selection.type != "Control") {
             text = document.selection.createRange().text;
         }
+        var currentSelection = saveSelection(document.activeElement);
 
         var replacementText = "{{c" + clozeNumber + "::" + text + "}}";
-        var sel, range;
-        if (window.getSelection) {
-            sel = window.getSelection();
-            if (sel.rangeCount) {
-                range = sel.getRangeAt(0);
-                range.deleteContents();
-                range.insertNode(document.createTextNode(replacementText));
-            }
-        } else if (document.selection && document.selection.createRange) {
-            range = document.selection.createRange();
-            range.text = replacementText;
+        pasteHtmlAtCaret(replacementText);
+        if(currentSelection.end-currentSelection.start=="0")
+        {
+            setCaretCharIndex($("#"+activeId)[0], currentSelection.start+6);
 
         }
-        editor.trigger('editableInput', {}, document.activeElement);
+        else
+        {
+            setCaretCharIndex($("#"+activeId)[0], currentSelection.end+8);
+
+        }
+        // editor.trigger('editableInput', {}, document.activeElement);
 
     }
 }
+//Functions by Tim Down from Rangy libray
+function saveSelection(containerEl) {
+    var charIndex = 0, start = 0, end = 0, foundStart = false, stop = {};
+    var sel = window.getSelection(), range;
 
+    function traverseTextNodes(node, range) {
+        if (node.nodeType == 3) {
+            if (!foundStart && node == range.startContainer) {
+                start = charIndex + range.startOffset;
+                foundStart = true;
+            }
+            if (foundStart && node == range.endContainer) {
+                end = charIndex + range.endOffset;
+                throw stop;
+            }
+            charIndex += node.length;
+        } else {
+            for (var i = 0, len = node.childNodes.length; i < len; ++i) {
+                traverseTextNodes(node.childNodes[i], range);
+            }
+        }
+    }
 
+    if (sel.rangeCount) {
+        try {
+            traverseTextNodes(containerEl, sel.getRangeAt(0));
+        } catch (ex) {
+            if (ex != stop) {
+                throw ex;
+            }
+        }
+    }
 
+    return {
+        start: start,
+        end: end
+    };
+}
+//Functions by Tim Down from Rangy libray
+function setCaretCharIndex(containerEl, index) {
+    var charIndex = 0, stop = {};
+    function traverseNodes(node) {
+        if (node.nodeType == 3) {
+            var nextCharIndex = charIndex + node.length;
+            if (index >= charIndex && index <= nextCharIndex) {
+                window.getSelection().collapse(node, index - charIndex);
+                throw stop;
+            }
+            charIndex = nextCharIndex;
+        }
+        // Count an empty element as a single character. The list below may not be exhaustive.
+        else if (node.nodeType == 1
+            && /^(input|br|img|col|area|link|meta|link|param|base)$/i.test(node.nodeName)) {
+            charIndex += 1;
+        } else {
+            var child = node.firstChild;
+            while (child) {
+                traverseNodes(child);
+                child = child.nextSibling;
+            }
+        }
+    }
+
+    try {
+        traverseNodes(containerEl);
+    } catch (ex) {
+        if (ex != stop) {
+            throw ex;
+        }
+    }
+}
+function pasteHtmlAtCaret(html) {
+    var sel, range;
+    if (window.getSelection) {
+        // IE9 and non-IE
+        sel = window.getSelection();
+        if (sel.getRangeAt && sel.rangeCount) {
+            range = sel.getRangeAt(0);
+            range.deleteContents();
+
+            // Range.createContextualFragment() would be useful here but is
+            // non-standard and not supported in all browsers (IE9, for one)
+            var el = document.createElement("div");
+            el.innerHTML = html;
+            var frag = document.createDocumentFragment(), node, lastNode;
+            while ( (node = el.firstChild) ) {
+                lastNode = frag.appendChild(node);
+            }
+            range.insertNode(frag);
+
+            // Preserve the selection
+            if (lastNode) {
+                range = range.cloneRange();
+                range.setStartAfter(lastNode);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+    } else if (document.selection && document.selection.type != "Control") {
+        // IE < 9
+        document.selection.createRange().pasteHTML(html);
+    }
+}
 
 function removeFromArray(array, element) {
     const index = array.indexOf(element);

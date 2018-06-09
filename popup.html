@@ -13,9 +13,16 @@
     <link rel="stylesheet" href="style.css" class="rel">
     <link rel="stylesheet" href="jquery-ui.css" class="rel">
     <link rel="stylesheet" href="medium-editor/dist/css/medium-editor.css">
+
+
+    <script src="mousetrap.min.js"></script>
+    <script src="mousetrap-record.min.js"></script>
+
     <!-- Core -->
     <link rel="stylesheet" href="medium-editor/dist/css/themes/default.css">
     <!-- or any other theme -->
+    <link href="select2/select2.min.css" rel="stylesheet" />
+    <script src="select2/select2.min.js"></script>
 </head>
 
 <body>
@@ -109,10 +116,15 @@
 
             </td>
             <td>
-                <div class="select-style"> <select id="FavouriteDeck">
 
-                </select>
-                </div>
+
+
+
+                    <select class="multipleSelect2" id="FavouriteDeck" multiple="multiple">
+
+                    </select>
+
+
             </td>
 
             </tr>
@@ -122,10 +134,9 @@
 
                 </td>
                 <td>
-                    <div class="select-style"> <select id="FavouriteModel">
+                     <select class="multipleSelect2" id="FavouriteModel" multiple>
 
                     </select>
-                    </div>
                 </td>
 
             </tr>
