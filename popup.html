@@ -10,7 +10,6 @@
     <script src="medium-editor/dist/js/medium-editor.js"></script>
     <script src='spectrum.js'></script>
     <link rel='stylesheet' href='spectrum.css' />
-    <link rel="stylesheet" href="style.css" class="rel">
     <link rel="stylesheet" href="jquery-ui.css" class="rel">
     <link rel="stylesheet" href="medium-editor/dist/css/medium-editor.css">
 
@@ -23,14 +22,11 @@
     <!-- or any other theme -->
     <link href="select2/select2.min.css" rel="stylesheet" />
     <script src="select2/select2.min.js"></script>
+    <link rel="stylesheet" href="style.css" class="rel">
+
+
 </head>
 
-<body>
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <body>
 
@@ -50,7 +46,7 @@
 
 
             <p> Current Deck:<button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshDecks">
-                <img src="docs/images/refresh.png">
+                <img src="docs/images/refresh.png" alt="icon">
             </button></p>
 
 
@@ -58,7 +54,7 @@
                 <select id="deckList"></select>
             </div>
             <p>Note Type: <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshModel">
-                <img src="docs/images/refresh.png">
+                <img src="docs/images/refresh.png" alt="icon">
             </button></p>
 
             <div class="select-style">
@@ -74,7 +70,7 @@
                     <label for="Default-Back-field">Back:</label> <textarea name="back" class="editable" id="Default-Back-Field"></textarea><br>
                 </div>
                 <label for="tags">Tags: </label><button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshTags">
-                <img src="docs/images/refresh.png">
+                <img src="docs/images/refresh.png" alt="icon">
             </button> <br>
                 <input id="tags" size="45">
                 <br>
@@ -93,10 +89,27 @@
 
     <div id="tabs-2">
 
-        <table style="width:100%">
-            <tr>
+                Favourite Decks:
 
-            </tr>
+       <br>
+
+
+                <select class="multipleSelect2" id="FavouriteDeck" multiple="multiple">
+
+                </select>
+
+
+
+        Favourite Models:
+<br>        <select class="multipleSelect2" id="FavouriteModel" multiple>
+
+                </select>
+    <br>
+
+        <hr>
+
+        <table style="width:100%">
+
             <tr>
                 <td>Sync Fields: <br>Manual: caches &
                     <img src="docs/images/refresh.png" /> to refresh
@@ -107,37 +120,6 @@
                         <option value="Manual">Manual</option>
 
                     </select></div>
-                </td>
-
-            </tr>
-            <tr></tr>
-
-            <td>
-                Favourite Decks:
-
-            </td>
-            <td>
-
-
-
-
-                    <select class="multipleSelect2" id="FavouriteDeck" multiple="multiple">
-
-                    </select>
-
-
-            </td>
-
-            </tr>
-            <tr>
-                <td>
-                    Favourite Models:
-
-                </td>
-                <td>
-                     <select class="multipleSelect2" id="FavouriteModel" multiple>
-
-                    </select>
                 </td>
 
             </tr>
@@ -176,13 +158,6 @@
                 </td>
                 <td><input type="button" id="appendFields" value="Change"> </td>
 
-            </tr>
-            <!--beta testing-->
-            <!--<tr>-->
-            <!--<td>Delete Extension!!</td>-->
-            <!--<td><input type="button" id="nukeExtension" value="Nuke it"></td>-->
-
-            <!--</tr>-->
             <tr>
                 <td>Rebuild Chrome Menu</td>
                 <td><input type="button" id="reloadChromeMenu" value="Rebuild Menu"></td>
@@ -240,7 +215,7 @@
             </tr>
             <tr>
                 <td> Edit shortcut for fields:</td>
-                <td> <a href="chrome://extensions/shortcuts">Open chrome settings(Right Click)</a></td>
+                <td>Paste <span style="background: yellow;">chrome://extensions/shortcuts/</span> in addressbar </td>
             </tr>
 
         </table>
@@ -285,9 +260,5 @@
 
 </body>
 
-</html>
-
-
-</body>
 
 </html>

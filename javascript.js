@@ -357,7 +357,7 @@ function restoreShortcuts(){
         rebindAllKeys();
          getShortcutValues();
 
-    notifySetting("The default shortcuts have been restored.")
+    notifySetting("The default shortcuts have been restored.");
 }
 function restore_All_Fields(fulfilled, item) {
 
