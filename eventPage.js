@@ -2,7 +2,6 @@ var currentFields;
 var currentNoteType;
 var savedFormFields = savedFormFields || [];
 var appendModeSettings;
-var noteSent = 0;
 var debugStatus;
 var currentDeck;
 var deckNamesSaved;

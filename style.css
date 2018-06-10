@@ -1,12 +1,16 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
-    min-width: 400px;
-    min-height: 460px;
-}
+    min-width:400px;
+    mim-height:450px;
+ }
 
 #tabs{
 
 }
+
+
+
+
 table {
     font-size: 1em;
 }
@@ -43,6 +47,10 @@ input[type=button], input[type=submit], input[type=reset] {
     margin: 2px 2px;
     cursor: pointer;
 }
+
+.shortcut{
+    background-color: #000;
+}
 input[type=submit]
 {
     background-color:#4CAF50;
@@ -55,7 +63,8 @@ form p{
     font-size: 12px;
     margin-bottom:1px;
 }
-.select-style, #select2-selection {
+
+.select-style {
     padding: 0;
     margin: 0;
     border: 1px solid #ccc;
@@ -66,6 +75,14 @@ form p{
     background: #fff;
     position: relative;
 }
+.select2-container {
+    width: 100% !important;
+}
+
+.select2-selection { overflow: hidden; }
+.select2-selection__rendered {
+    overflow:hidden;
+    white-space: normal; word-break: break-all; }
 
 .select-style:after {
     top: 50%;
@@ -81,9 +98,6 @@ form p{
     border-width: 5px;
     margin-top: -2px;
     z-index: 100;
-}
-.select2-container {
-    width: 100% !important;
 }
 
 .select-style select {
@@ -121,4 +135,9 @@ textarea {
 .medium-editor-element
 {
     min-height: 32px;
+}
+
+.shortcut{
+    color:#003eff;
+    font-size: 14px;
 }

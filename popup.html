@@ -40,7 +40,8 @@
     <ul>
         <li><a href="#tabs-1">Add Card</a></li>
         <li><a href="#tabs-2">Settings</a></li>
-        <li><a href="#tabs-3">About</a></li>
+        <li><a href="#tabs-3">Shortcuts</a></li>
+        <li><a href="#tabs-4">About</a></li>
     </ul>
     <div id="tabs-1">
 
@@ -112,7 +113,7 @@
             <tr></tr>
 
             <td>
-                Favourite Deck:
+                Favourite Decks:
 
             </td>
             <td>
@@ -130,7 +131,7 @@
             </tr>
             <tr>
                 <td>
-                    Favourite Model:
+                    Favourite Models:
 
                 </td>
                 <td>
@@ -170,7 +171,7 @@
             </tr>
             <tr>
                 <td>
-                    <p>Append: Append fields data from chrome menu instead of overwrite.
+                    <p>Append: Append fields from chrome menu.
                     </p>
                 </td>
                 <td><input type="button" id="appendFields" value="Change"> </td>
@@ -196,7 +197,7 @@
 
             </tr>
             <tr>
-                <td>Sync Anki Desktop to AnkiWeb(Opens Anki Desktop)</td>
+                <td>Sync Anki Desktop to AnkiWeb</td>
                 <td><input type="button" id="syncAnkiToWeb" value="Start Sync"></td>
 
             </tr>
@@ -211,8 +212,41 @@
         <div id="settingsLog"></div>
 
     </div>
-
     <div id="tabs-3">
+
+<div id="shortcutsLog"></div>
+        <table style="width:100%">
+            <tr>
+                <td> Favourite Deck:</td>
+                <td> <input type="button" id="changeDeckShortcut" class="shortcut" value="Change Shortcut"> </td>
+            </tr>
+
+            <tr>
+                <td> Favourite Models:</td>
+                <td> <input type="button" id="changeModelShortcut" class="shortcut" value="Change Shortcut"> </td>
+            </tr>
+
+            <tr>
+                <td> Cloze:</td>
+                <td> <input type="button" id="changeClozeShortcut" class="shortcut" value="Change Shortcut"> </td>
+            </tr>
+            <tr>
+                <td> Quick Submit:</td>
+                <td> <input type="button" id="changeQuickSubmitShortcut" class="shortcut" value="Change Shortcut"> </td>
+            </tr>
+            <tr>
+                <td> Restore Default Shortcuts:</td>
+                <td> <input type="button" id="restoreShortcuts" style="background: #000;" value="Restore Defaults"> </td>
+            </tr>
+            <tr>
+                <td> Edit shortcut for fields:</td>
+                <td> <a href="chrome://extensions/shortcuts">Open chrome settings(Right Click)</a></td>
+            </tr>
+
+        </table>
+
+    </div>
+    <div id="tabs-4">
 
 
 

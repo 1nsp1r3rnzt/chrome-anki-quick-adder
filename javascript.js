@@ -41,10 +41,10 @@ function restore_defaults() {
 
 //restore user settings on load of page
 function restore_options() {
+    getChanges("debugStatus"); //default
     getChanges("favourites");
     getChanges("deckNamesSaved");
     getChanges("syncFrequency"); //default
-    getChanges("debugStatus"); //default
     getChanges("currentDeck");
     getChanges("currentNoteType");
     getChanges("currentFields");
@@ -53,6 +53,7 @@ function restore_options() {
     getChanges("modelNamesSaved");
     getChanges("getTagsSaved");
     getChanges("allSettings");
+
 
 
 
@@ -328,6 +329,36 @@ function removeSettings(value) {
     }
 }
 
+function getShortcutValues(){
+    for (var key in favourites.shortcuts) {
+
+        {
+            $("#change" + key + "Shortcut").val(favourites.shortcuts[key]+" (change)");
+        }
+
+    }
+
+}
+
+
+
+function restoreShortcuts(){
+
+
+        var shortcuts = {
+            Deck: "alt+shift+d",
+            Cloze: "alt+shift+w",
+            QuickSubmit: "ctrl+enter",
+            Model:"alt+shift+c"
+
+        };
+        favourites.shortcuts = shortcuts;
+        saveChanges("favourites",favourites);
+        rebindAllKeys();
+         getShortcutValues();
+
+    notifySetting("The default shortcuts have been restored.")
+}
 function restore_All_Fields(fulfilled, item) {
 
     $("#addCard").empty();
@@ -398,7 +429,8 @@ function getChanges(key) {
 
 function setValue(key, valueReturn) {
     window[key] = valueReturn;
-    debugLog("key is" + key + "and value retreived" + valueReturn);
+    debugLog("key is" + key + "and value retreived below");
+    debugLog(valueReturn);
 
 }
 
@@ -594,6 +626,10 @@ function notifyError(data) {
         errorLogs.innerHTML = "";
     }, 3000);
 }
+function notifyShortcut(data) {
+
+    shortcutsLog.innerHTML = data;
+    }
 
 function notifySetting(data) {
 
@@ -602,6 +638,96 @@ function notifySetting(data) {
         settingsLog.innerHTML = "";
     }, 3000);
 }
+
+function selectFavourite(optionValue, whatElement, type) {
+
+
+    //find element select
+
+    var value;
+    var currentSelected;
+    var counter;
+    //if element, change and save it
+    var favToSelect;
+    if (type == "currentDeck") {
+        currentSelected = currentDeck;
+        if(typeof favourites.deckCounter=="undefined"||favourites.deckCounter >=favourites.deck.length)
+        {
+            favourites.deckCounter  = 0;
+
+        }
+        favToSelect =   favourites.deck[favourites.deckCounter];
+        favourites.deckCounter  = favourites.deckCounter+1;
+        value  = $(whatElement).find('option[value="' + favToSelect + '"]').val();
+    } else {
+        currentSelected = currentNoteType;
+        if(typeof favourites.modelCounter=="undefined"||favourites.modelCounter >=favourites.model.length)
+        {
+            favourites.modelCounter  = 0;
+
+        }
+        favToSelect =   favourites.model[favourites.modelCounter];
+        favourites.modelCounter  = favourites.modelCounter+1;
+        value  = $(whatElement).find('option[value="' + favToSelect + '"]').val();
+    }
+    if (value) {
+        if (value != currentSelected) {
+            $(whatElement + ' option[selected="selected"]').each(
+                function () {
+                    $(this).removeAttr('selected');
+                }
+            );
+
+            $(whatElement).val(favToSelect).change();
+            // currentDeck = value;
+            // saveChanges()
+            debugLog(whatElement + " Selected");
+            saveChanges(type, value);
+        }
+
+    } else
+
+
+    {
+        notifyError("No " + type + " is selected as favourite. Please, select in settings");
+    }
+
+}
+
+function rebindAllKeys() {
+    if(typeof favourites.shortcuts=="undefined")
+    {
+        var shortcuts = {
+            Deck: "alt+shift+d",
+            Cloze: "alt+shift+w",
+            QuickSubmit: "ctrl+enter",
+            Model:"alt+shift+c"
+
+        };
+        favourites.shortcuts = shortcuts;
+        saveChanges("favourites",favourites);
+    }
+
+    Mousetrap.bind(favourites.shortcuts.Deck, function (e) {
+        selectFavourite(favourites.deck, "#deckList", "currentDeck");
+    });
+
+    Mousetrap.bind(favourites.shortcuts.Model, function (e) {
+
+        selectFavourite(favourites.model, "#modelList", "currentNoteType");
+    });
+    Mousetrap.bind(favourites.shortcuts.Cloze, function (e) {
+        selectCloze();
+
+    });
+    Mousetrap.bind(favourites.shortcuts.QuickSubmit, function (e) {
+        submitToAnki();
+    });
+
+
+}
+
+
 
 
 
@@ -612,7 +738,11 @@ $(document).ready(function () {
     init();
     //create tabs
     $("#tabs").tabs();
-    $('.multipleSelect2').select2();
+    $('.multipleSelect2').select2(
+        {
+            width: null
+        }
+    );
     //multiple selection for decks and cloze
 
 
@@ -626,7 +756,6 @@ $(document).ready(function () {
         $('#forcePlainText option[value=' + allSettings.forcePlainText + ']').attr('selected', 'selected');
 
         $('#cleanPastedHTML option[value=' + allSettings.cleanPastedHTML + ']').attr('selected', 'selected');
-       console.log(favourites.deck);
         $('#FavouriteDeck').val(favourites.deck);
         $('#FavouriteDeck').trigger('change');
         $('#FavouriteModel').val(favourites.model);
@@ -634,6 +763,11 @@ $(document).ready(function () {
 
 
     });
+
+
+    $(document).on('click', '#ui-id-3', function () {
+            getShortcutValues();
+       });
 
     if (syncFrequency == "Live") {
 
@@ -648,7 +782,7 @@ $(document).ready(function () {
     $('#FavouriteDeck').change(function () {
         var value = $(this).select2('data');
         currentFav = [];
-        for(item of value)
+        for(var item of value)
         {
             currentFav.push(item.id);
         }
@@ -660,7 +794,7 @@ $(document).ready(function () {
     $('#FavouriteModel').change(function () {
         var value = $(this).select2('data');
         var currentFav = [];
-        for(item of value)
+        for(var item of value)
         {
             currentFav.push(item.id);
         }
@@ -721,6 +855,63 @@ $(document).ready(function () {
 
     });
 
+    function strcmp(a, b) {
+        if (a.toString() < b.toString()) return -1;
+        if (a.toString() > b.toString()) return 1;
+        return 0;
+    }
+
+
+
+    $(".shortcut").click(function () {
+        var currentId = $(this).attr('id');
+        var id = currentId.replace(/change(.*?)Shortcut/g, '$1');
+        notifyShortcut("Please press the shortcut Keys for favourite" + id);
+
+                Mousetrap.record(function(sequence) {
+
+
+                    var shortcutPresent = false;
+                    var assignedShortcut =0;
+                    var userPressedKeys = sequence.join(' ');
+                    for (var key in favourites.shortcuts) {
+                        if(strcmp(userPressedKeys,favourites.shortcuts[key])==0)
+                        {
+                            shortcutPresent =true;
+                            assignedShortcut = key;
+                            break;
+                        }
+                    }
+
+                    if(shortcutPresent==false)
+                    {
+                        if(typeof favourites.shortcuts=="undefined")
+                        {
+                            favourites.shortcuts = {};
+
+                        }
+
+                        shortcutId = sequence.join(' ');
+                        notifyShortcut(shortcutId+" is set for "+id+" shortcut");
+                        favourites.shortcuts[id] =shortcutId;
+                        saveChanges("favourites",favourites);
+                        Mousetrap.reset();
+                        rebindAllKeys();
+                        getShortcutValues();
+                        //    call all shortcuts again
+
+
+                    }
+                    else {
+                        notifyShortcut(userPressedKeys+" is already assigned to " +assignedShortcut);
+
+                    }
+
+                });
+
+
+
+    });
 
 
 
@@ -728,6 +919,7 @@ $(document).ready(function () {
     $("#resetButton").click(function () {
         clearTextBoxes();
     });
+
 
 
     $("#clearAllDefaults").click(function () {
@@ -849,6 +1041,10 @@ $(document).ready(function () {
         }
 
     });
+    //reset button
+    $("#restoreShortcuts").click(function () {
+        restoreShortcuts();
+    });
 
 
 
@@ -865,12 +1061,6 @@ $(document).ready(function () {
 
     });
 
-
-    Mousetrap.bind('alt+shift+d', function(e)
-    {
-        selectFavourite(favourites.deck, "#deckList", "currentDeck");
-    });
-
     Mousetrap.prototype.stopCallback = function(e, element, combo, sequence) {
         var self = this;
 
@@ -882,83 +1072,20 @@ $(document).ready(function () {
         }
 
     };
-    var keyz = 'alt+shift+c';
 
-    Mousetrap.bind(keyz, function(e)
-    {
-        selectFavourite(favourites.model, "#modelList", "currentNoteType");
-    });
-    Mousetrap.bind('alt+shift+w', function(e)
-    {
-        selectCloze();
+    //bind keys
+    rebindAllKeys();
 
-    });
-    Mousetrap.bind('ctrl+enter', function(e)
-    {
-        submitToAnki();
-    });
-
-
-
-
-    function selectFavourite(optionValue, whatElement, type) {
-
-
-        //find element select
-
-        var value;
-        var currentSelected;
-        var counter;
-        //if element, change and save it
-        var favToSelect;
-        if (type == "currentDeck") {
-            currentSelected = currentDeck;
-            if(typeof favourites.deckCounter=="undefined"||favourites.deckCounter >=favourites.deck.length)
-            {
-                favourites.deckCounter  = 0;
-
-            }
-            console.log(favourites);
-            favToSelect =   favourites.deck[favourites.deckCounter];
-            favourites.deckCounter  = favourites.deckCounter+1;
-             console.log(favToSelect);
-            value  = $(whatElement).find('option[value="' + favToSelect + '"]').val();
-        } else {
-            currentSelected = currentNoteType;
-            if(typeof favourites.modelCounter=="undefined"||favourites.modelCounter >=favourites.model.length)
-            {
-                favourites.modelCounter  = 0;
-
-            }
-            favToSelect =   favourites.model[favourites.modelCounter];
-            favourites.modelCounter  = favourites.modelCounter+1;
-            value  = $(whatElement).find('option[value="' + favToSelect + '"]').val();
-        }
-        if (value) {
-            if (value != currentSelected) {
-                $(whatElement + ' option[selected="selected"]').each(
-                    function () {
-                        $(this).removeAttr('selected');
-                    }
-                );
-
-                $(whatElement).val(favToSelect).change();
-                // currentDeck = value;
-                // saveChanges()
-                debugLog(whatElement + " Selected");
-                saveChanges(type, value);
-            }
-
-        } else
-
-
-        {
-            notifyError("No " + type + "is selected as favourite. Please, select in settings");
-        }
-
-    }
 
 });
+
+
+function recordSequence() {
+    Mousetrap.record(function(sequence) {
+        // sequence is an array like ['ctrl+k', 'c']
+        return sequence.join(' ');
+    });
+}
 
 
 function selectCloze() {
@@ -1145,8 +1272,8 @@ function syncAnkiToAnkiWeb() {
 
 
 
-function submitToAnki() {
 
+function submitToAnki() {
 
     //Getting Field types
     currentTags = $('#tags').val();
@@ -1247,8 +1374,6 @@ function submitToAnki() {
     }
 
 }
-
-
 
 function clearTextBoxes() {
     //Notify background js to clear savedFormFields array
