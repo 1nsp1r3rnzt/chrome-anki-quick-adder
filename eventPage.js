@@ -12,9 +12,9 @@ var currentTags;
 var connectionStatus;
 var modelNamesSaved;
 var storedFieldsForModels = storedFieldsForModels || {};
-var editor;
 var allSettings = {};
-
+var allSavedNotes =[];
+var stickyFields = {};
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.action == "wakeup") {
@@ -83,24 +83,25 @@ chrome.commands.onCommand.addListener(function (cmd) {
 
 
                             if (appendModeSettings == 1) {
-                                if (savedFormFields.hasOwnProperty(currentFieldName)) {
-                                    savedFormFields[currentFieldName] = savedFormFields[currentFieldName] + "<p></p>" + currentText;
+                                if (typeof savedFormFields[fieldToAdd]!="undefined") {
+                                    savedFormFields[fieldToAdd] = savedFormFields[fieldToAdd] +"<br>"+ currentText;
                                     createNotification("Appended: " + displayText + " to field: " + currentFieldName);
 
                                 } else
 
                                 {
-                                    savedFormFields[currentFieldName] = currentText;
+                                    savedFormFields[fieldToAdd] = currentText;
                                     createNotification("Added: " + displayText + " to field: " + currentFieldName);
 
 
                                 }
                             } else {
 
-                                savedFormFields[currentFieldName] = currentText;
+                                savedFormFields[fieldToAdd] = currentText;
                                 createNotification("Added: " + displayText + " to field: " + currentFieldName);
 
                             }
+                            saveChanges("savedFormFields",savedFormFields);
                         } else {
                             createNotification("Sorry, No Field number " + (fieldToAdd + 1) + " for Model:" + currentNoteType);
 
@@ -114,7 +115,7 @@ chrome.commands.onCommand.addListener(function (cmd) {
                 } else {
 
 
-                    debugLog("null");
+                    debugLog("null added");
                 }
 
 
@@ -147,7 +148,11 @@ function ankiConnectRequest(action, version, params = {}) {
 
                             if (response.result) {
                                 resolve(response.result);
-                                saveChanges(action + "Saved", response.result);
+                                if(action!="addNote"||action!="sync")
+                                {
+                                    saveChanges(action + "Saved", response.result);
+
+                                }
 
                             } else {
                                 throw response.error;
@@ -271,6 +276,14 @@ document.addEventListener('DOMContentLoaded', restore_options);
 function isUpdatedNow(){
     saveChanges("syncFrequency", "Manual");
 
+    if(typeof allSettings.saveNotes=="undefined"){
+        var allSettings = {};
+        allSettings.removeDuplicateNotes = "false";n
+        allSettings.saveNotes = "true";
+        allSettings.stickyFields = "true";
+        saveChanges("allSettings", allSettings);
+
+    }
     chrome.tabs.create({
         url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"
     }, function (tab) {
@@ -286,6 +299,9 @@ function isInstalledNow() {
     var allSettings = {};
     allSettings.forcePlainText = "true";
     allSettings.cleanPastedHTML = "true";
+    allSettings.saveNotes = "true";
+    allSettings.removeDuplicateNotes = "false";
+    allSettings.stickyFields = "true";
     saveChanges("allSettings", allSettings);
 
     debugStatus = 1;
@@ -310,10 +326,6 @@ chrome.extension.onConnect.addListener(function (port) {
         if (msg == "reloadContextMenu") {
             restore_options();
             updateContextMenu();
-        } else if (msg == "resetForms") {
-
-            savedFormFields = [];
-            debugLog(savedFormFields);
         }
 
 
@@ -330,18 +342,17 @@ function restore_options() {
     getChanges("currentDeck");
     getChanges("currentNoteType");
     getChanges("currentFields");
+    getChanges("savedFormFields");
     getChanges("storedFieldsForModels");
     getChanges("appendModeSettings"); //default
     getChanges("modelNamesSaved");
     getChanges("getTagsSaved");
     getChanges("allSettings");
+    getChanges("allSavedNotes");
+    getChanges("stickyFields");
 
 }
 
-function fieldsSync() {
-
-    return savedFormFields;
-}
 
 chrome.contextMenus.onClicked.addListener(function (clickedData) {
     var currentItem = clickedData.menuItemId;
@@ -351,29 +362,29 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
         //add to back
         if (currentItem.indexOf("secretFieldKey12z-") >= 0) {
             var currentFieldName = currentItem.replace(/secretFieldKey12z-/gi, "");
-
             debugLog(savedFormFields);
-
+            var fieldNumber = currentFields.indexOf(currentFieldName);
             if (appendModeSettings == 1) {
-                if (savedFormFields.hasOwnProperty(currentFieldName)) {
-                    savedFormFields[currentFieldName] = savedFormFields[currentFieldName] + "<p></p>" + clickedData.selectionText;
+                if (typeof savedFormFields[fieldNumber]!="undefined") {
+                    savedFormFields[fieldNumber] = savedFormFields[fieldNumber] + "<br>" + clickedData.selectionText;
 
                 } else
 
                 {
-                    savedFormFields[currentFieldName] = clickedData.selectionText;
+                    savedFormFields[fieldNumber] = clickedData.selectionText;
 
 
                 }
+
             } else {
 
-                savedFormFields[currentFieldName] = clickedData.selectionText;
-
+                savedFormFields[fieldNumber] = clickedData.selectionText;
             }
 
 
 
         }
+        saveChanges("savedFormFields",savedFormFields);
 
 
     }
@@ -382,24 +393,15 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
         updateContextMenu();
 
     }
+    if (currentItem.indexOf("ClearAllItems") >= 0) {
+        clearStickySettings("all");
 
-    if (currentItem.indexOf("clearFieldKey12z-") >= 0 || currentItem == "ClearAllItems") {
-        var fieldToClear = currentItem.replace(/clearFieldKey12z-/gi, "");
-        Object.keys(savedFormFields).forEach(function (key) {
-            if (currentItem == "ClearAllItems") {
-                delete savedFormFields[key];
-                debugLog("clearing" + key);
-
-            } else {
-
-                if (key == fieldToClear) {
-
-                    delete savedFormFields[key];
-                    debugLog("cleared the" + key);
-                    return;
-                }
-            }
-        });
+    }
+    if (currentItem.indexOf("clearFieldKey12z-") >= 0) {
+        let fieldToClear = currentItem.replace(/clearFieldKey12z-/gi, "");
+            var indexFieldToClear = currentFields.indexOf(fieldToClear);
+            savedFormFields[indexFieldToClear]="";
+            saveChanges("savedFormFields",savedFormFields);
 
     }
     //workaround for updating deck through context menu.
@@ -407,6 +409,26 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
     if (currentItem.indexOf("secretDeckKey12z") >= 0) {
         var currentdeckName = currentItem.replace(/secretDeckKey12z-/gi, "");
         saveChanges("currentDeck", currentdeckName);
+
+    }
+
+    if (currentItem.indexOf("secretModelKey12z") >= 0) {
+        var currentModelName = currentItem.replace(/secretModelKey12z-/gi, "");
+
+        saveChanges("currentNoteType", currentModelName);
+        currentNoteType= currentModelName;
+
+        if(storedFieldsForModels.hasOwnProperty(currentModelName))
+        {
+
+            saveChanges("currentFields",storedFieldsForModels[currentModelName]);
+
+        }
+        else
+        {
+            console.log(storedFieldsForModels);
+        }
+
 
     }
     //        workaround for submitting through chrome menu
@@ -429,8 +451,8 @@ function submitToAnki() {
         $.each(currentFields, function (index, value) {
 
             try {
-                textfieldValue = savedFormFields[value];
-                if (typeof textfieldValue != "undefined" || textfieldValue != "<p><br></p>") {
+                var textfieldValue = savedFormFields[index];
+                if (typeof textfieldValue != "undefined" && textfieldValue != "<p><br></p>") {
                     sendValue = textfieldValue;
                     counter++;
                 } else {
@@ -439,16 +461,17 @@ function submitToAnki() {
                 }
             } catch (error) {
                 sendValue = "";
-                notifyUser("Please edit your card. Can't parse ID" + value);
+                notifyUser("Please edit your card. Can't parse ID" + value,"notifyalert");
             }
 
 
             arrayToSend[value] = sendValue;
 
         });
-        debugLog(arrayToSend);
 
-        if (counter === 0) {
+        debugLog(savedFormFields);
+        debugLog(arrayToSend);
+        if (counter == 0) {
 
             if (connectionStatus == "false") {
                 notifyUser("Can't connect to Anki. Please check it", "notifyAlert");
@@ -472,9 +495,9 @@ function submitToAnki() {
             ankiConnectRequest("addNote", 6, params)
                 .then(function (fulfilled) {
 
-                    savedFormFields = [];
-                    saveChanges("savedFormFields", savedFormFields);
-                    notifyUser("Note is added succesfully.", "notifyalert");
+
+                    notifyUser("Note is added to Anki succesfully.", "notifyalert");
+                    clearStickySettings();
 
 
                 })
@@ -484,7 +507,16 @@ function submitToAnki() {
                         //notification for error
                         var currentError = JSON.stringify(error);
                         if (findRegex("Note is duplicate", currentError)) {
-                            notifyUser("This is a duplicate Note. Please change main field and try again", "notifyalert");
+                            if(allSettings.stickyFields==="true")
+                            {
+                                notifyUser("Duplicate Note. Please change main field or disable sticky fields or use clear all in Menu", "notifyalert");
+
+                            }
+                            else {
+
+                                notifyUser("This is a duplicate Note. Please change main field or s", "notifyalert");
+
+                            }
 
                         } else if (findRegex("Collection was not found", currentError)) {
                             notifyUser("Collection was not found", "notifyalert");
@@ -498,14 +530,88 @@ function submitToAnki() {
                         } else if (findRegex("Deck was not found", currentError)) {
                             notifyUser("Deck was not found.Please create Deck:" + currentDeck, "notifyalert");
 
-                        } else {
+                        }
+
+                        else if(findRegex("failed to connect to AnkiConnect",currentError)) {
+
+                            if (allSettings.saveNotes == "true") {
+
+                                var valueToStore = JSON.stringify(params);
+
+                                if (allSavedNotes.indexOf(valueToStore) != "-1") {
+
+                                    notifyUser("Note is already Saved","notifyalert");
+
+
+                                }
+                                else {
+                                    allSavedNotes.push(valueToStore);
+
+                                    notifyUser("Note Saved to storage successfully","notifyalert");
+                                    saveChanges("allSavedNotes", allSavedNotes);
+                                    clearStickySettings();
+
+
+                                }
+                            }
+                            else {
+                                notifyUser("No connection.Turn on settings-> saveNotes to save in LocalStorage ","notifyalert");
+
+
+                            }
+                        }
+                            else {
                             notifyUser("Error: " + error, "notifyalert");
                         }
                     }
-                });
+                }).finally(function(){
+
+
+            } );
         }
 
     }
+}
+
+function clearStickySettings(type = "single") {
+
+    console.log(stickyFields);
+    if (typeof stickyFields == "undefined") {
+        stickyFields = {};
+    }
+        if (!(currentNoteType in stickyFields))
+        {
+            stickyFields[currentNoteType] = {};
+
+        }
+
+
+    if (type == "all") {
+
+        savedFormFields = [];
+
+    } else {
+        console.log(savedFormFields);
+        console.log(stickyFields);
+
+        if (allSettings.stickyFields == "true") {
+            for (var key in savedFormFields) {
+
+                var checkKeyvalue = stickyFields[currentNoteType][currentFields[key]];
+                if (checkKeyvalue == "false" || typeof checkKeyvalue == "undefined") {
+                    savedFormFields[key] = '';
+                }
+            }
+
+
+        } else {
+            savedFormFields = [];
+        }
+
+    }
+    saveChanges("savedFormFields", savedFormFields);
+
+
 }
 
 function updateContextMenu() {
@@ -612,6 +718,7 @@ function createContextMenu() {
         "contexts": ["selection", "all"]
     };
     chrome.contextMenus.create(clearAllItems);
+
     //update deck menu :child->Main Menu
     debugLog("value is " + currentDeck);
     var displayDeck = currentDeck.replace(/:/gi, ">");
@@ -634,6 +741,7 @@ function createContextMenu() {
     };
     chrome.contextMenus.create(separatorz2);
     //Decksublist :child->ankiCurrentDeck->
+
     $.each(deckNamesSaved.sort(), function (index, value) {
         var textFieldValue;
         // var displayDeck = value.replace(/:/gi, ">");
@@ -650,6 +758,42 @@ function createContextMenu() {
         var childItem = {
             "parentId": "ankiCurrentDeck",
             "id": "secretDeckKey12z-" + value,
+            "title": textFieldValue,
+            "contexts": ["selection", "all"]
+        };
+        chrome.contextMenus.create(childItem);
+
+    });
+
+    //Model menu
+
+    var modelNameSliced;
+    //update model menu :child->Main Menu
+    if(currentNoteType.length>20)
+    {
+        modelNameSliced = currentNoteType.slice(0,20)+"...";
+
+
+    }
+    else {
+        modelNameSliced = currentNoteType;
+
+    }
+    var currentModelMenu = {
+
+        "parentId": "ankiAddWord",
+        "id": "ankiCurrentModel",
+        "title": "Model: " + modelNameSliced,
+        "contexts": ["selection", "all"]
+    };
+    chrome.contextMenus.create(currentModelMenu);
+
+    $.each(modelNamesSaved.sort(), function (index, value) {
+        var textFieldValue=value;
+
+        var childItem = {
+            "parentId": "ankiCurrentModel",
+            "id": "secretModelKey12z-" + value,
             "title": textFieldValue,
             "contexts": ["selection", "all"]
         };
@@ -683,9 +827,15 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 
     for (var key in changes) {
         var storageChange = changes[key];
-        debugLog("key:" + key + " new value:" + storageChange.newValue);
+        debugLog("key:" + key + " new value below:");
+        debugLog(storageChange.newValue);
+
         if ("deckNamesSaved" == key) {
             deckNamesSaved = storageChange.newValue;
+
+        }
+        if ("getTagsSaved" == key) {
+            getTagsSaved = storageChange.newValue;
 
         }
 
@@ -694,18 +844,35 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 
         }
 
-        if ("getTagsSaved" == key) {
-            getTagsSaved = storageChange.newValue;
+
+        if ("savedFormFields" == key) {
+
+            savedFormFields = storageChange.newValue;
 
         }
+
+        if ("allSavedNotes" == key) {
+
+            allSavedNotes = storageChange.newValue;
+
+        }
+
+            if ("stickyFields" == key) {
+                stickyFields = storageChange.newValue;
+
+            }
+
         if ("currentFields" == key) {
-            //clear saved forms..
-            savedFormFields = [];
+
             currentFields = storageChange.newValue;
             updateContextMenu();
 
         }
+        if ("allSettings" == key) {
 
+            allSettings = storageChange.newValue;
+
+        }
 
         if ("currentNoteType" == key) {
 
@@ -742,6 +909,10 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 
         }
 
+        if ("storedFieldsForModels" == key) {
+
+            storedFieldsForModels = storageChange.newValue;
+        }
         if ("syncFrequency" == key) {
 
             syncFrequency = storageChange.newValue;
@@ -808,7 +979,8 @@ function getChanges(key) {
 
 function setValue(key, valueReturn) {
     window[key] = valueReturn;
-    debugLog(key + valueReturn);
+    debugLog(key+"value below");
+    debugLog(valueReturn);
 
 }
 debugLog = (function (undefined) {

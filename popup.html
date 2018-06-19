@@ -5,23 +5,28 @@
     <meta charset="UTF-8">
     <title>Anki Adder Chrome Extension</title>
     <script src="jquery-3.3.1.min.js"></script>
-    <script src="javascript.js"></script>
+
     <script src="jquery-ui.min.js"></script>
     <script src="medium-editor/dist/js/medium-editor.js"></script>
     <script src='spectrum.js'></script>
+    <script src='jquery.validate.min.js'></script>
     <link rel='stylesheet' href='spectrum.css' />
     <link rel="stylesheet" href="jquery-ui.css" class="rel">
     <link rel="stylesheet" href="medium-editor/dist/css/medium-editor.css">
-
+    <script src="jsgrid.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="jsgrid.min.css" />
+    <link type="text/css" rel="stylesheet" href="jsgrid-theme.min.css" />
 
     <script src="mousetrap.min.js"></script>
     <script src="mousetrap-record.min.js"></script>
-
     <!-- Core -->
     <link rel="stylesheet" href="medium-editor/dist/css/themes/default.css">
     <!-- or any other theme -->
     <link href="select2/select2.min.css" rel="stylesheet" />
     <script src="select2/select2.min.js"></script>
+    <script src="notify.min.js"></script>
+    <script src="javascript.js"></script>
+
     <link rel="stylesheet" href="style.css" class="rel">
 
 
@@ -34,10 +39,11 @@
 
 <div id="tabs">
     <ul>
-        <li><a href="#tabs-1">Add Card</a></li>
-        <li><a href="#tabs-2">Settings</a></li>
-        <li><a href="#tabs-3">Shortcuts</a></li>
-        <li><a href="#tabs-4">About</a></li>
+        <li><a href="#tabs-1" class="tab-add-card">Add Card</a></li>
+        <li><a href="#tabs-cards" class="tab-saved-cards">Saved Notes</a></li>
+        <li><a href="#tabs-2" class="tab-settings">Setting</a></li>
+        <li><a href="#tabs-3" class="tab-shortcuts">Shortcuts</a></li>
+        <li><a href="#tabs-4" class="tab-about">About</a></li>
     </ul>
     <div id="tabs-1">
 
@@ -54,7 +60,7 @@
                 <select id="deckList"></select>
             </div>
             <p>Note Type: <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshModel">
-                <img src="docs/images/refresh.png" alt="icon">
+                <img src="docs/images/refresh.png" alt="icon" title="update model list from Anki">
             </button></p>
 
             <div class="select-style">
@@ -62,7 +68,9 @@
                 <select id="modelList">  </select></div>
 
 
-            <h2> Add Card</h2>
+            <h2> Add Card<button type="button" style="background-color:white;border:none;"  id="nightMode">
+                <img src="images/nightmode.png" alt="icon" title="Changes to dark theme temporary to see colored text clearly">
+            </button></h2>
             <form id="form1">
 
                 <div id="addCard">
@@ -86,6 +94,64 @@
         </div>
 
     </div>
+    <div id="tabs-cards">
+
+
+        <div class="ui-widget">
+            <div id="jsGrid">
+
+            </div>
+
+            <div id="gridButtons">
+
+                <input type="button" id="dialogGridDeleteAll" value="Delete all Notes">
+                <input type="button" id="dialogGridSubmit"  class="greenButton" value="Send saved Notes to Anki">
+
+            </div>
+
+            <div id="dialog-gridDeleteAll-confirm" title="Delete all notes?">
+
+            </div>
+                <div id="dialog-gridSubmit-confirm" title="Send All Notes To Anki?">
+
+                </div>
+            <div id="saveNotesLogs"></div>
+
+            <div id="detailsDialog" title="add card">
+
+                               <p> Current Deck:
+
+
+                               <div class="select-style">
+                                   <select id="dialogDeckList"></select>
+                               </div>
+                               <p>Note Type:
+
+                               <div class="select-style">
+
+                                   <select id="dialogModelList">  </select></div>
+                               <div id="dialogsLog"></div>
+
+                               <h2> Add Card</h2>
+                               <form id="dialogform1">
+
+                                   <div id="dialogAddCard">
+                                   </div>
+                                   <label for="tags">Tags: </label>
+                                   <input id="dialogTags" size="45">
+                                   <br>
+
+                                   <input type="button" id="dialogResetButton" value="Reset">
+
+                                   <input type="submit" id="submitDialog" value="Save Note">
+                               </form>
+
+                           </div>
+
+        </div>
+    </div>
+
+
 
     <div id="tabs-2">
 
@@ -105,19 +171,92 @@
 
                 </select>
     <br>
+        In-Line editor Buttons:
+        <br>        <select class="multipleSelect2" id="FavouriteButtons" multiple>
+        <option value="colorPicker">colorPicker</option>
+        <option value="bold">bold</option>
+        <option value="italic">italic</option>
+        <option value="removeFormat">removeFormat</option>
+
+        <option value="pre">Code</option>
+        <option value="underline">underline</option>
+        <option value="strikethrough">strikethrough</option>
+        <option value="subscript">subscript</option>
+        <option value="superscript">superscript</option>
+        <option value="quote">quote</option>
+        <option value="orderedlist">orderedlist</option>
+        <option value="unorderedlist">unorderedlist</option>
+        <option value="indent">indent</option>
+        <option value="outdent">outdent</option>
+        <option value="justifyLeft">justifyLeft</option>
+        <option value="justifyCenter">justifyCenter</option>
+        <option value="justifyRight">justifyRight</option>
+        <option value="justifyFull">justifyFull</option>
+        <option value="h1">h1</option>
+        <option value="h2">h2</option>
+        <option value="h3">h3</option>
+        <option value="h4">h4</option>
+        <option value="h5">h5</option>
+        <option value="h6">h6</option>
+
+
+    </select>
+        <br>
 
         <hr>
 
         <table style="width:100%">
 
             <tr>
-                <td>Sync Fields: <br>Manual: caches &
-                    <img src="docs/images/refresh.png" /> to refresh
-                    <br> Live: Auto update Decks List</td>
+                <td>Sync Fields: <img src="images/info.png" class="info-image"  alt="icon" title="Manual: Live: Auto update Decks List from Anki everytime" />
+                    </td>
                 <td>
                     <div class="select-style"> <select id="syncSetting">
-                        <option value="Live">Live Sync</option>
-                        <option value="Manual">Manual</option>
+                        <option value="Live">Live Sync(Always need Anki)</option>
+                        <option value="Manual">Manual (Caches Fields)</option>
+
+                    </select></div>
+                </td>
+
+            </tr>
+                <tr>
+                <td>save Notes: LocalStorage
+                    <img src="images/info.png" class="info-image" alt="icon" title="provides the ability to save notes in extension if Anki is not connected. You can bulk add notes to anki by clicking :save notes to anki: in saveNotes tab">
+                </td>
+                <td>
+                    <div class="select-style"> <select id="saveNotes">
+                        <option value="false">Don't Save</option>
+                        <option value="true">Save them</option>
+
+                    </select></div>
+                </td>
+
+
+            </tr>
+            <tr>
+                <td>Frozen Fields:<img src="images/info.png" class="info-image" alt="icon" title="Frozen fields are sticky fields that stay after a adding note. Turn on setting and Click [S] icon in the Add card tab for each field. ">
+                </td>
+                <td>
+                    <div class="select-style"> <select id="stickyFields">
+                        <option value="false">false</option>
+                        <option value="true">true</option>
+
+                    </select></div>
+                </td>
+
+
+            </tr>
+
+            <tr>
+                <td>Remove duplicate Notes from Local Storage:
+
+                    <img src="images/info.png" class="info-image" alt="icon" title="When saved notes are submitted, duplicate notes are deleted from local storage automatically. Turning it off leaves them in the list for you to edit  ">
+
+                </td>
+                <td>
+                    <div class="select-style"> <select id="removeDuplicateNotes">
+                        <option value="false">False</option>
+                        <option value="true">True</option>
 
                     </select></div>
                 </td>
@@ -126,6 +265,8 @@
             <tr>
                 <td>
                     paste Plain text:
+                    <img src="images/info.png" class="info-image" alt="icon" title="filters data pasted to allow plain html">
+
 
                 </td>
                 <td>
@@ -140,6 +281,8 @@
             <tr>
                 <td>
                     Clean pasted Html
+                    <div id="info-text" ><img src="images/info.png" class="info-image" alt="icon" title="clears classes from pasted html when turned on">
+                    </div>
 
                 </td>
                 <td>
@@ -153,31 +296,44 @@
             </tr>
             <tr>
                 <td>
-                    <p>Append: Append fields from chrome menu.
+                    <p>Append data to fields:
+                        <img src="images/info.png" class="info-image"  alt="icon" title="When turned on, When you press shortcut to add data or send data from chrome menu, selected data on any page is appended to already existing data. When turned off, the fields are cleared every time before sending data ">
+
                     </p>
                 </td>
                 <td><input type="button" id="appendFields" value="Change"> </td>
 
             <tr>
-                <td>Rebuild Chrome Menu</td>
+                <td>Rebuild Chrome Menu
+                    <img src="images/info.png" class="info-image" alt="icon" title="If you don't see chrome menu, then recover using this option. It will try to recreate the menu ">
+
+                </td>
                 <td><input type="button" id="reloadChromeMenu" value="Rebuild Menu"></td>
 
             </tr>
             <tr>
                 <td>
-                    <p>Debug: Turn console debug on or off
+                    <p>Debug Mode:
+                        <img src="images/info.png" class="info-image"  alt="icon" title=": Turn console debug on or off to help debugging.">
+
+
                     </p>
                 </td>
                 <td><input type="button" id="changeDebugMode" value="Change Mode"> </td>
 
             </tr>
             <tr>
-                <td>Sync Anki Desktop to AnkiWeb</td>
+                <td>Sync Anki Desktop to AnkiWeb
+                    <img src="images/info.png" class="info-image" alt="icon" title="Clicking it will open AnkiDesktop and press Sync.">
+
+                </td>
                 <td><input type="button" id="syncAnkiToWeb" value="Start Sync"></td>
 
             </tr>
             <tr>
-                <td>Clear all Settings & Restore defaults</td>
+                <td>Clear all Settings & Restore defaults
+                    <img src="images/info.png"class="info-image"  alt="icon" title="Warning, All settings will deleted and default settings will be restored.">
+                </td>
                 <td><input type="button" style="background: #000;" id="clearAllDefaults" value="Default"></td>
 
             </tr>
@@ -215,9 +371,16 @@
             </tr>
             <tr>
                 <td> Edit shortcut for fields:</td>
-                <td>Paste <span style="background: yellow;">chrome://extensions/shortcuts/</span> in addressbar </td>
+                <td>Paste <span style="background: yellow;">chrome://extensions/shortcuts</span> in addressbar </td>
             </tr>
-
+            <tr>
+                <td> shortcut for New Line:</td>
+                <td>Paste <span style="background: #ffce00;">Shift+Enter</span> in any field </td>
+            </tr>
+            <tr>
+                <td> Shortcut for New Paragraph:</td>
+                <td>Press <span style="background: #a4c7ff;">Enter</span> in any Field </td>
+            </tr>
         </table>
 
     </div>

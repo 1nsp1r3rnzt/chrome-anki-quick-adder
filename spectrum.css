@@ -302,7 +302,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
 .sp-picker-container , .sp-palette-container {
     float:left;
     position: relative;
-    padding: 10px;
+    padding: 8px;
     padding-bottom: 300px;
     margin-bottom: -290px;
 }

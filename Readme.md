@@ -90,6 +90,24 @@ ___
 
 ---
 ## ChangeLog
+                                        Version 1.0.0 - Monday, June 18th, 2018
+                                          - Ability to save notes in Local Storage and sync later. (settings-> saveNotes)
+                                          - Added ability to customize in-line editor buttons (settings-> In-Line editor Buttons)
+                                        - Added sticky Fields. Click [S] icon and field data will persist after adding a note until you clear.
+                                        - Mode to change field background theme to dark mode temporarily.
+                                        - Fixed field deletion on noteType   change.
+                                        ---------------------------------------
+                                          Version 0.0.9 - Sunday, June 10th, 2018
+                                          - Fixed bugs
+                                        ---------------------------------------
+                                          Version 0.0.8 - Sunday, June 10th, 2018
+                                          - Toggle between favourite decks or models (select more than one deck or model)
+                                          - Fixed cloze caret position
+                                          - Customizable shortcuts
+                                        ---------------------------------------Version 0.0.7 - Wednesday, June 7th, 2018
+                                          - card submission directly on shortcut instead of submission through pop-up.
+                                        ---------------------------------------Version 0.0.6 - Wednesday, June 7th, 2018
+                                        -fixed settings bug for users who updated instead of installing it.
                                            Version 0.0.5 - Wednesday, June 6th, 2018
                                         ---------------------------------------
                                         - shortcuts for: deck, model and Cloze
