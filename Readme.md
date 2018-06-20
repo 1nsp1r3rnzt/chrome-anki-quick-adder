@@ -90,6 +90,20 @@ ___
 
 ---
 ## ChangeLog
+                                        Version 1.0.4 - Tuesday, June 19th, 2018
+                                        - Ability to export and import your saved notes in extension.
+                                        - fixed typeError bug on saving notes.
+                                        - Quick icon to turn off global sticky fields.
+                                        --------------------------------
+                                        Version 1.0.3 - Tuesday, June 19th, 2018
+                                        - Moved to local storage to save currentFields instead of sync
+                                        --------------------------------
+                                        Version 1.0.2 - Tuesday, June 19th, 2018
+                                        Fixed Type Error
+                                        --------------------------------
+                                        Version 1.0.1 - Tuesday, June 19th, 2018
+                                        Fixed bug for users who updated extension.
+                                        --------------------------------
                                         Version 1.0.0 - Monday, June 18th, 2018
                                           - Ability to save notes in Local Storage and sync later. (settings-> saveNotes)
                                           - Added ability to customize in-line editor buttons (settings-> In-Line editor Buttons)

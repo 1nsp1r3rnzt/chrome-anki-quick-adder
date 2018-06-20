@@ -1,11 +1,8 @@
 var currentFields;
 var currentNoteType;
 var savedFormFields = savedFormFields || [];
-var appendModeSettings;
-var debugStatus;
 var currentDeck;
 var deckNamesSaved;
-var syncFrequency;
 var manifest = chrome.runtime.getManifest();
 var onceTimeForceSync;
 var currentTags;
@@ -20,6 +17,62 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.action == "wakeup") {
 
     }
+    else if(message.action == "importedNotes")
+    {
+
+        if(typeof message.data!="undefined")
+        {
+
+           try{
+               var importedNotes = JSON.parse(message.data);
+               console.log(importedNotes);
+               if(importedNotes.length>0)
+               {
+                   let duplicateCounter = 0;
+                   let importNotesCounter = 0;
+                   if(typeof allSavedNotes=="undefined")
+                   {
+                       allSavedNotes = [];
+
+                   }
+
+                       for(let item in importedNotes)
+                       {
+                           if(allSavedNotes.indexOf(importedNotes[item])==-1)
+                           {
+                               allSavedNotes.push(importedNotes[item]);
+                               importNotesCounter++;
+                           }
+                           else
+                           {
+                               duplicateCounter++;
+                           }
+
+                       }
+
+
+
+                    var duplicateNotesMsg = duplicateCounter>0?"duplicates found: "+duplicateCounter:"";
+                   var importNotesMsg = importNotesCounter>0?"Notes imported: "+importNotesCounter:" No new notes were imported  :";
+
+                   notifyUser(importNotesMsg+duplicateNotesMsg,"notifyalert");
+                   saveChanges("allSavedNotes",allSavedNotes);
+               }
+               else {
+
+                   notifyUser("Cant parse the file","notifyalert");
+
+               }
+           }
+           catch(errors)
+           {
+               notifyUser(errors.toString(),"notifyalert");
+
+           }
+
+
+
+        } }
 });
 
 chrome.runtime.onInstalled.addListener(function (details) {
@@ -82,7 +135,7 @@ chrome.commands.onCommand.addListener(function (cmd) {
                         if (typeof currentFieldName != "undefined") {
 
 
-                            if (appendModeSettings == 1) {
+                            if (allSettings.appendModeSettings == 1) {
                                 if (typeof savedFormFields[fieldToAdd]!="undefined") {
                                     savedFormFields[fieldToAdd] = savedFormFields[fieldToAdd] +"<br>"+ currentText;
                                     createNotification("Appended: " + displayText + " to field: " + currentFieldName);
@@ -101,7 +154,7 @@ chrome.commands.onCommand.addListener(function (cmd) {
                                 createNotification("Added: " + displayText + " to field: " + currentFieldName);
 
                             }
-                            saveChanges("savedFormFields",savedFormFields);
+                            saveChanges("savedFormFields",savedFormFields,"local");
                         } else {
                             createNotification("Sorry, No Field number " + (fieldToAdd + 1) + " for Model:" + currentNoteType);
 
@@ -131,7 +184,7 @@ chrome.commands.onCommand.addListener(function (cmd) {
 
 function ankiConnectRequest(action, version, params = {}) {
     return new Promise((resolve, reject) => {
-        if (((typeof window[action + "Saved"] != "undefined") && (syncFrequency == "Manual" || onceTimeForceSync === 0)) && ((action != "sync") || (action != "addNote"))) {
+        if (((typeof window[action + "Saved"] != "undefined") && (allSettings.syncFrequency == "Manual" || onceTimeForceSync === 0)) && ((action != "sync") || (action != "addNote"))) {
             resolve(window[action + "Saved"]);
 
         } else {
@@ -148,8 +201,9 @@ function ankiConnectRequest(action, version, params = {}) {
 
                             if (response.result) {
                                 resolve(response.result);
-                                if(action!="addNote"||action!="sync")
+                                if(action!="addNote"&&action!="sync"&&action!="version")
                                 {
+                                    console.log(action);
                                     saveChanges(action + "Saved", response.result);
 
                                 }
@@ -246,25 +300,29 @@ function createNotification(notificationTitle) {
 
 function findRegex(findWhat, errorz) {
 
-
     let attributes = "gi";
     var txtToFind = new RegExp(findWhat, attributes);
 
     if (!findWhat) {
         return false;
-    } else if (errorz === null) {
+    } else if (typeof errorz ==="undefined"||errorz===null) {
         return false;
 
     } else {
 
-        if ((errorz.match(txtToFind))) {
-            return true;
-        } else {
-            return false;
 
+        if (errorz.match) {
+
+            if (errorz.match(txtToFind)) {
+                return true;
 
         }
+       }
+       else {
+        return false;
+        }
     }
+
 
 }
 
@@ -274,16 +332,7 @@ document.addEventListener('DOMContentLoaded', restore_options);
 
 //updated
 function isUpdatedNow(){
-    saveChanges("syncFrequency", "Manual");
 
-    if(typeof allSettings.saveNotes=="undefined"){
-        var allSettings = {};
-        allSettings.removeDuplicateNotes = "false";n
-        allSettings.saveNotes = "true";
-        allSettings.stickyFields = "true";
-        saveChanges("allSettings", allSettings);
-
-    }
     chrome.tabs.create({
         url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"
     }, function (tab) {
@@ -293,18 +342,18 @@ function isUpdatedNow(){
 }
 //installed defaults
 function isInstalledNow() {
-    saveChanges("appendModeSettings", "1");
-    saveChanges("debugStatus", "0");
-    saveChanges("syncFrequency", "Manual");
     var allSettings = {};
     allSettings.forcePlainText = "true";
     allSettings.cleanPastedHTML = "true";
     allSettings.saveNotes = "true";
     allSettings.removeDuplicateNotes = "false";
     allSettings.stickyFields = "true";
+    allSettings.appendModeSettings = "1";
+    allSettings.debugStatus = "0";
+    allSettings.syncFrequency = "Manual";
     saveChanges("allSettings", allSettings);
 
-    debugStatus = 1;
+    allSettings.debugStatus = 1;
     var win = window.open("popup.html", "extension_popup", "width=300,height=400,status=no,scrollbars=yes,resizable=no");
 
     setTimeout(function () {
@@ -315,7 +364,7 @@ function isInstalledNow() {
     chrome.tabs.create({
         url: "https://codehealthy.com/chrome-anki-quick-adder/#getting-started"
     }, function (tab) {
-        debugLog("update tab launched");
+        debugLog("install tab launched");
     });
 }
 
@@ -337,17 +386,14 @@ function restore_options() {
     getChanges("connectionStatus");
     getChanges("favourites");
     getChanges("deckNamesSaved");
-    getChanges("syncFrequency"); //default
-    getChanges("debugStatus"); //default
     getChanges("currentDeck");
     getChanges("currentNoteType");
     getChanges("currentFields");
-    getChanges("savedFormFields");
+    getChanges("savedFormFields","local");
     getChanges("storedFieldsForModels");
-    getChanges("appendModeSettings"); //default
     getChanges("modelNamesSaved");
     getChanges("getTagsSaved");
-    getChanges("allSettings");
+    getChanges("allSettings"); //default
     getChanges("allSavedNotes");
     getChanges("stickyFields");
 
@@ -364,7 +410,7 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
             var currentFieldName = currentItem.replace(/secretFieldKey12z-/gi, "");
             debugLog(savedFormFields);
             var fieldNumber = currentFields.indexOf(currentFieldName);
-            if (appendModeSettings == 1) {
+            if (allSettings.appendModeSettings == 1) {
                 if (typeof savedFormFields[fieldNumber]!="undefined") {
                     savedFormFields[fieldNumber] = savedFormFields[fieldNumber] + "<br>" + clickedData.selectionText;
 
@@ -384,7 +430,7 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
 
 
         }
-        saveChanges("savedFormFields",savedFormFields);
+        saveChanges("savedFormFields",savedFormFields,"local");
 
 
     }
@@ -401,7 +447,7 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
         let fieldToClear = currentItem.replace(/clearFieldKey12z-/gi, "");
             var indexFieldToClear = currentFields.indexOf(fieldToClear);
             savedFormFields[indexFieldToClear]="";
-            saveChanges("savedFormFields",savedFormFields);
+            saveChanges("savedFormFields",savedFormFields,"local");
 
     }
     //workaround for updating deck through context menu.
@@ -426,7 +472,7 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
         }
         else
         {
-            console.log(storedFieldsForModels);
+
         }
 
 
@@ -442,7 +488,7 @@ chrome.contextMenus.onClicked.addListener(function (clickedData) {
 
 
 function submitToAnki() {
-    saveChanges("savedFormFields", savedFormFields);
+    saveChanges("savedFormFields", savedFormFields,"local");
     if (typeof currentFields != "undefined") {
         currentTags = "";
         var counter = 0;
@@ -533,6 +579,11 @@ function submitToAnki() {
                         }
 
                         else if(findRegex("failed to connect to AnkiConnect",currentError)) {
+                            //defaults save Notes
+                            if(typeof allSettings.saveNotes ==="undefined"){
+                                allSettings.saveNotes = "true";
+                                saveChanges("allSettings", allSettings);
+                            }
 
                             if (allSettings.saveNotes == "true") {
 
@@ -540,7 +591,7 @@ function submitToAnki() {
 
                                 if (allSavedNotes.indexOf(valueToStore) != "-1") {
 
-                                    notifyUser("Note is already Saved","notifyalert");
+                                    notifyUser("Note is already Saved in local list.","notifyalert");
 
 
                                 }
@@ -575,7 +626,6 @@ function submitToAnki() {
 
 function clearStickySettings(type = "single") {
 
-    console.log(stickyFields);
     if (typeof stickyFields == "undefined") {
         stickyFields = {};
     }
@@ -591,9 +641,12 @@ function clearStickySettings(type = "single") {
         savedFormFields = [];
 
     } else {
-        console.log(savedFormFields);
-        console.log(stickyFields);
 
+
+        if(typeof allSettings.stickyFields === "undefined"){
+            allSettings.stickyFields = "true";
+            saveChanges("allSettings", allSettings);
+        }
         if (allSettings.stickyFields == "true") {
             for (var key in savedFormFields) {
 
@@ -609,7 +662,7 @@ function clearStickySettings(type = "single") {
         }
 
     }
-    saveChanges("savedFormFields", savedFormFields);
+    saveChanges("savedFormFields", savedFormFields,"local");
 
 
 }
@@ -830,6 +883,7 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
         debugLog("key:" + key + " new value below:");
         debugLog(storageChange.newValue);
 
+
         if ("deckNamesSaved" == key) {
             deckNamesSaved = storageChange.newValue;
 
@@ -863,9 +917,13 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
             }
 
         if ("currentFields" == key) {
+            if(typeof deckNamesSaved!="undefined"&&modelNamesSaved!="undefined")
+            {
+                currentFields = storageChange.newValue;
 
-            currentFields = storageChange.newValue;
-            updateContextMenu();
+                updateContextMenu();
+
+            }
 
         }
         if ("allSettings" == key) {
@@ -878,33 +936,35 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 
             currentNoteType = storageChange.newValue;
         }
-        if ("debugStatus" == key) {
 
-            debugStatus = storageChange.newValue;
-        }
 
 
         if ("currentDeck" == key) {
 
-            currentDeck = storageChange.newValue;
-            debugLog("current Fields are" + currentFields);
-            if (typeof currentFields != "undefined") {
 
-                var deckNameFiltered = (storageChange.newValue).replace(/:/gi, ">");
+            if(typeof storageChange.newValue!="undefined")
+            {
+                currentDeck = storageChange.newValue;
+                debugLog("current Fields are" + currentFields);
+                if (typeof currentFields != "undefined") {
+
+                    var deckNameFiltered = (storageChange.newValue).replace(/:/gi, ">");
 
 
-                var currentDeckMenu = {
-                    "parentId": "ankiAddWord",
-                    "title": "Deck:" + deckNameFiltered,
-                    "contexts": ["selection", "all"]
-                };
+                    var currentDeckMenu = {
+                        "parentId": "ankiAddWord",
+                        "title": "Deck:" + deckNameFiltered,
+                        "contexts": ["selection", "all"]
+                    };
 
-                chrome.contextMenus.update("ankiCurrentDeck", currentDeckMenu);
+                    chrome.contextMenus.update("ankiCurrentDeck", currentDeckMenu);
 
-            } else {
+                } else {
 
-                debugLog("fields are unspecified.");
+                    debugLog("fields are unspecified.");
+                }
             }
+
 
 
         }
@@ -913,17 +973,6 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 
             storedFieldsForModels = storageChange.newValue;
         }
-        if ("syncFrequency" == key) {
-
-            syncFrequency = storageChange.newValue;
-        }
-
-
-        if ("appendModeSettings" == key) {
-
-            appendModeSettings = storageChange.newValue;
-        }
-
 
         if ("connectionStatus" == key) {
             if (storageChange.newValue == "false") {
@@ -946,34 +995,88 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
 
 });
 
-function saveChanges(key, value) {
 
+function saveChanges(key, value,type="sync") {
+    // Check that there's some code there.
     if (!value) {
-        debugLog('Error: No value specified');
+
+        debugLog('Error: No value specified for' + key);
         return;
     }
 
-    // Save it using the Chrome extension storage API.
-    chrome.storage.sync.set({
-        [key]: value
-    }, function () {
-        //TODO: show to use for saved settings..
-        debugLog('Settings saved for ' + key);
-    });
+    if(type==="sync")
+    {
+
+        // Save it using the Chrome extension storage API.
+        chrome.storage.sync.set({
+            [key]: value
+        }, function() {
+
+            var error = chrome.runtime.lastError;
+            if (error) {
+                if(allSettings.debugStatus===1)
+                {
+                    notifyError("Can't save"+key+JSON.stringify(error), "error,text,3000");
+
+                }
+            }
+            //TODO: show to use for saved settings..
+            debugLog('Settings saved for' + key + " and val below");
+            debugLog(value);
+        });
+    }
+    else if(type==="local") {
+
+        // Save it using the Chrome extension storage API.
+        chrome.storage.local.set({
+            [key]: value
+        }, function() {
+
+            var error = chrome.runtime.lastError;
+            if (error) {
+                if(allSettings.debugStatus===1)
+                {
+                    notifyError("Can't save"+key+JSON.stringify(error), "error,text,3000");
+
+                }
+            }
+            //TODO: show to use for saved settings..
+            debugLog('Settings saved for' + key + " and val below");
+            debugLog(value);
+        });
+    }
 }
 
+function getChanges(key,type="sync") {
+    var valueReturn;
 
-function getChanges(key) {
-    var valueReturn = [];
+    if(type=="sync")
+    {
+        chrome.storage.sync.get([key], function(result) {
+            // debugLog('Value currently is ' + result[key]');
+            valueReturn = result[key];
+            if (typeof valueReturn != "undefined") {
+                setValue(key, valueReturn);
 
-    chrome.storage.sync.get([key], function (result) {
-        // debugLog('Value currently is ' + result[key]');
-        valueReturn = result[key];
-        if (typeof valueReturn != "undefined") {
-            setValue(key, valueReturn);
-        }
+            } else {
+                debugLog(key + " is undefined or" + valueReturn);
+            }
 
-    });
+        });
+    }
+    else if(type=="local"){
+        chrome.storage.local.get([key], function(result) {
+            // debugLog('Value currently is ' + result[key]');
+            valueReturn = result[key];
+            if (typeof valueReturn != "undefined") {
+                setValue(key, valueReturn);
+
+            } else {
+                debugLog(key + " is undefined or" + valueReturn);
+            }
+
+        });
+    }
     // chrome.storage.sync.get(null, function (data) { console.info(data) });
 }
 
@@ -1023,7 +1126,11 @@ debugLog = (function (undefined) {
     return function (params) {
 
         // only if explicitly true somewhere
-        if (typeof debugStatus === typeof undefined || debugStatus === 0) return;
+        if(typeof allSettings==="undefined")
+        {
+            allSettings={};
+        }
+        if (typeof allSettings.debugStatus === typeof undefined || allSettings.debugStatus === 0) return;
 
         // call handler extension which provides stack trace
         debugLog().write(Array.prototype.slice.call(arguments, 0)); // turn into proper array

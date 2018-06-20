@@ -68,9 +68,15 @@
                 <select id="modelList">  </select></div>
 
 
-            <h2> Add Card<button type="button" style="background-color:white;border:none;"  id="nightMode">
-                <img src="images/nightmode.png" alt="icon" title="Changes to dark theme temporary to see colored text clearly">
-            </button></h2>
+            <h2> Add Card
+                <button type="button" class="info-image" style="background-color:white;border:none;"  id="stickyFieldsToggle">
+                    <img src="images/stickyFields.png" alt="icon" title="Toggle global Sticky fields settings. Turning off globally is useful when you add cards from chrome menu so it won't append data unintentionally.">
+                </button>
+                <button type="button"  class="info-image" style="background-color:white;border:none;"  id="nightMode">
+                    <img src="images/nightmode.png" alt="icon" title="Changes to dark theme temporary to see colored text clearly">
+                </button></h2>
+
+
             <form id="form1">
 
                 <div id="addCard">
@@ -105,7 +111,9 @@
             <div id="gridButtons">
 
                 <input type="button" id="dialogGridDeleteAll" value="Delete all Notes">
-                <input type="button" id="dialogGridSubmit"  class="greenButton" value="Send saved Notes to Anki">
+                <input type="button" id="dialogGridSubmit"  class="greenButton" value="Send Notes to Anki">
+                <input type="button" id="dialogGridExport"  class="blueButton" title="make sure you are not on a chrome setting page as import and export does not have permission to save from there" value="Export Notes">
+                <input type="button" id="dialogGridImport"  class="blueButton" title="import from exported notes" value="Import Notes">
 
             </div>
 
@@ -119,8 +127,7 @@
 
             <div id="detailsDialog" title="add card">
 
-                               <p> Current Deck:
-
+                               <p> Current Deck
 
                                <div class="select-style">
                                    <select id="dialogDeckList"></select>
@@ -301,7 +308,14 @@
 
                     </p>
                 </td>
-                <td><input type="button" id="appendFields" value="Change"> </td>
+                <td>
+
+                    <div class="select-style"> <select id="appendFields">
+                        <option value="0">False</option>
+                        <option value="1">True</option>
+                    </select>
+
+                </td>
 
             <tr>
                 <td>Rebuild Chrome Menu
@@ -334,7 +348,7 @@
                 <td>Clear all Settings & Restore defaults
                     <img src="images/info.png"class="info-image"  alt="icon" title="Warning, All settings will deleted and default settings will be restored.">
                 </td>
-                <td><input type="button" style="background: #000;" id="clearAllDefaults" value="Default"></td>
+                <td><input type="button" style="background: #000;" id="clearAllDefaults" value="Restore Defaults"></td>
 
             </tr>
 

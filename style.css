@@ -161,8 +161,11 @@ textarea {
 
 
 
-.nightMode{
+.nightMode {
 
     background: #000;
-    color:white;
+    color: white;
+}
+.blueButton{
+    background-color: #ff7405 !important;
 }
