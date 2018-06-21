@@ -7,6 +7,7 @@
     "scripts": ["jquery-3.3.1.min.js","eventPage.js"],
     "persistent": false
   },
+
   "permissions": [
     "storage",
     "notifications",
@@ -27,7 +28,11 @@
   },
   "web_accessible_resources": [
     "icon-64.png",
-    "src/importFile.js"
+    "src/importFile.js",
+    "src/editCardModal.js",
+    "src/editCardModel.css",
+    "popup.html"
+
   ],
   "commands": {
     "add-to-first-field": {
