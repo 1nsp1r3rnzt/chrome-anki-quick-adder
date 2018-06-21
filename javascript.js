@@ -40,7 +40,7 @@ chrome.runtime.onMessage.addListener(
         }
         else if (request.msg === "noteAdded")
         {
-            clearTextBoxes();
+            clearTextBoxes("backgroundAll");
 
         }
     } );
@@ -120,20 +120,30 @@ var deckNames = function() {
             connectionStatus = false;
             saveChanges("connectionStatus", false);
             let syncSettingsNotice;
+            let conRefusedError;
             if (allSettings.syncFrequency !== "Manual" || typeof allSettings.syncFrequency === "undefined") {
                 if (typeof modelNamesSaved !== "undefined" && typeof deckNamesSaved !== "undefined") {
+                     conRefusedError = "<p>Connection Refused</p>This extension needs Anki to sync fields in Live Mode.</a>";
 
                     syncSettingsNotice = "There is already data in Cache. It is preferred to <span id='syncSettingSpan'>turn on <input type='button' id='syncSettingsButton' value='Turn on Cache'> to cache fields and save notes locally.</span>";
 
                 }
 
             } else {
+                conRefusedError = "<p>Connection Refused and no cached data.</p>1. This extension needs <a href='https://apps.ankiweb.net' target='_blank'>Anki.</a> <br>2. Also, please install <a href='https://ankiweb.net/shared/info/2055492159' target='_blank'> Anki connect plugin (V6).</a> (if not installed).<br><br><a href='https://codehealthy.com/chrome-anki-quick-adder/#getting-started' target='_blank'>Read documentation</a><br>";
 
                 syncSettingsNotice = '';
             }
+            if(syncSettingsNotice)
+            {
+                errorLogs.innerHTML =  conRefusedError+ syncSettingsNotice + "";
 
-            errorLogs.innerHTML = "<p>Connection Refused!!</p>This extension needs <a href='https://apps.ankiweb.net'>Anki to sync fields.</a> Also, please install <a href='https://ankiweb.net/shared/info/2055492159'> Anki connect plugin (V6).</a> (if not installed).<br><p>Right click on these links to open</p><br>" + syncSettingsNotice + "";
+            }
+            else {
+                errorLogs.innerHTML =  conRefusedError;
 
+
+            }
 
 
             debugLog(error);
@@ -709,7 +719,6 @@ function savedNotesLoad() {
             selectEditDialogOptions(localNoteType, "#dialogModelList");
 
 
-                    console.log(savedDialogFields);
 
             for (let key in storedFieldsForModels[localNoteType])
 
@@ -996,7 +1005,7 @@ function getChanges(key, type = "sync") {
                 setValue(key, valueReturn);
 
             } else {
-                debugLog(key + " is undefined or" + valueReturn);
+                debugLog(key + " is" + valueReturn);
             }
 
         });
@@ -2717,7 +2726,11 @@ function sendEachNoteAnki(item) {
 
 }
 
+function jq( myid ) {
 
+    return "#" + myid.replace( /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
+
+}
 
 
 function submitToAnki() {
@@ -2737,11 +2750,13 @@ function submitToAnki() {
     var counter = 0;
     var arrayToSend = {};
     var sendValue;
-    $.each(currentFields, function(index, value) {
+    let lastFieldError = [];
+
+    $("textarea[class^='fieldsToMaintain']").each(function() {
+        var textfieldValue = $(this).val();
+        var value = $(this).attr('id').replace(/-Field/gi, "");
         sendValue = "";
-        // debugLog(index + ": " + value);
         try {
-            var textfieldValue = $('#' + value + '-Field').val();
             if (typeof textfieldValue != "undefined" || textfieldValue != "<p><br></p>" || textfieldValue != "<p></p>" || textfieldValue != "<br>") {
                 if (textfieldValue) {
 
@@ -2754,7 +2769,10 @@ function submitToAnki() {
             }
         } catch (error) {
             sendValue = "";
-            notifyError("Please edit your card. Can't parse ID" + value, "error");
+            if(!lastFieldError)
+            {
+                lastFieldError.push(value);
+            }
         }
 
 
@@ -2769,7 +2787,14 @@ function submitToAnki() {
             notifyError("Empty Fields. Can't connect to Anki. Please check it", "error");
 
 
-        } else {
+        }
+        else if(lastFieldError.length!==0)
+        {
+            notifyError("Please edit your card. Can't parse ID" +lastFieldError.toString() , "error");
+
+        }
+
+      else {
             notifyError("All fields are empty", "warning");
 
         }
@@ -2868,7 +2893,7 @@ function catchAnkiSubmitErrors(error, params) {
 function clearTextBoxes(type = "single") {
 
 
-    if (type == "all") {
+    if (type === "all") {
 
         savedFormFields = [];
 
@@ -2880,46 +2905,36 @@ function clearTextBoxes(type = "single") {
             jQuery('#addCard div').html('');
 
         });
-    } else {
-        //    initialize objects
-        if (typeof stickyFields == "undefined") {
-            stickyFields = {};
-        }
-        if (typeof stickyFields[currentNoteType] == "undefined") {
-            stickyFields[currentNoteType] = {};
-        }
-        //default for StickyFields
-        if (typeof allSettings.stickyFields == "undefined") {
+    } else if (allSettings.stickyFields === true && typeof stickyFields[currentNoteType] !== "undefined") {
+                $('textarea').each(function() {
+                    let TextFieldId = $(this).attr('id');
 
-            allSettings.stickyFields = true;
-            saveChanges("allSettings", allSettings);
-        }
+                    let key = TextFieldId.replace(/-Field/gi, "");
+                    let checkKeyValue = stickyFields[currentNoteType][key];
 
-        if (allSettings.stickyFields === true) {
-            for (var key in savedFormFields) {
+                    if (checkKeyValue === false || typeof checkKeyValue === "undefined") {
+                         savedFormFields[currentFields.indexOf(key)] = '';
 
-                var checkKeyvalue = stickyFields[currentNoteType][currentFields[key]];
-                if (checkKeyvalue === false || typeof checkKeyvalue === "undefined") {
-                    savedFormFields[key] = '';
+                            //clear medium editor
+                            $(this).val('');
 
-                    if (typeof currentFields[key] != "undefined") {
+                            $(this).prev().text('');
+                        }
 
-                        $('#' + currentFields[key] + '-Field').val('');
-                        //clear medium editor
-                        $('#' + currentFields[key] + '-Field').prev().text('');
 
-                    }
 
-                } else {
-
-                }
-
+                });
             }
 
 
+         else {
+                //default for StickyFields
+                if (typeof allSettings.stickyFields === "undefined") {
 
+                    allSettings.stickyFields = true;
+                    saveChanges("allSettings", allSettings);
+                }
 
-        } else {
             savedFormFields = [];
 
             $('textarea').each(function() {
@@ -2931,13 +2946,12 @@ function clearTextBoxes(type = "single") {
             jQuery('#addCard div').html('');
         }
 
-    }
+if(type!=="backgroundAll"){
+
     saveChanges("savedFormFields", savedFormFields, "local");
 
-
-
-
-    $('#tags').val('');
+}
+$('#tags').val('');
 
 }
 

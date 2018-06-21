@@ -24,7 +24,6 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 
             try {
                 let importedNotes = JSON.parse(message.data);
-                console.log(importedNotes);
                 if (importedNotes.length > 0) {
                     let duplicateCounter = 0;
                     let importNotesCounter = 0;
@@ -71,7 +70,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
         isInstalledNow();
     } else if (details.reason === "update") {
 
-        isUpdatedNow();
+        isUpdatedNow(0);
     }
 });
 
@@ -334,13 +333,16 @@ document.addEventListener('DOMContentLoaded', restore_options);
 
 
 //updated
-function isUpdatedNow() {
+function isUpdatedNow(openUrl=0) {
 
-    chrome.tabs.create({
-        url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"
-    }, function(tab) {
-        debugLog("update tab launched");
-    });
+ if(openUrl===1)
+ {
+     chrome.tabs.create({
+         url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"
+     }, function(tab) {
+         debugLog("update tab launched");
+     });
+ }
 
 }
 //installed defaults
@@ -545,7 +547,8 @@ function submitToAnki() {
 
                     notifyUser("Note is added to Anki succesfully.", "notifyalert");
                     chrome.runtime.sendMessage({
-                        msg:"noteAdded"
+                        msg:"noteAdded",
+                        data: ""
                     });
                     clearStickySettings();
 
@@ -623,31 +626,18 @@ function submitToAnki() {
 
 function clearStickySettings(type = "single") {
 
-    if (typeof stickyFields == "undefined") {
-        stickyFields = {};
-    }
-    if (!(currentNoteType in stickyFields)) {
-        stickyFields[currentNoteType] = {};
-
-    }
 
 
-    if (type == "all") {
+
+    if (type === "all"||allSettings.stickyFields !== true) {
 
         savedFormFields = [];
 
     } else {
 
 
-        if (typeof allSettings.stickyFields === "undefined") {
-            allSettings.stickyFields = true;
-            saveChanges("allSettings", allSettings);
-        }
-        if (allSettings.stickyFields === true) {
-
             if (savedFormFields.length > 0) {
                 for (let i = 0; i < savedFormFields.length; i++) {
-
                     let checkKeyvalue = stickyFields[currentNoteType][currentFields[i]];
                     if (checkKeyvalue === false || typeof checkKeyvalue == "undefined") {
                         savedFormFields[i] = '';
@@ -658,12 +648,26 @@ function clearStickySettings(type = "single") {
                 savedFormFields = [];
             }
 
+            if (typeof stickyFields == "undefined") {
+                stickyFields = {};
+            }
+            if (!(currentNoteType in stickyFields)) {
+                stickyFields[currentNoteType] = {};
 
-            saveChanges("savedFormFields", savedFormFields, "local");
+            }
+
 
 
         }
+
+    //default
+    if (typeof allSettings.stickyFields === "undefined") {
+        allSettings.stickyFields = true;
+        saveChanges("allSettings", allSettings);
     }
+
+    saveChanges("savedFormFields", savedFormFields, "local");
+
 }
 
 function updateContextMenu() {
