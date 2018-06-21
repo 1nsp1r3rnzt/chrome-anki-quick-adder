@@ -101,7 +101,7 @@ var deckNames = function() {
             });
 
 
-            if (typeof currentDeck === "undefined" || counter === 1 || currentDeck == "noCurrentDeck") //Deal with errors
+            if (typeof currentDeck === "undefined" || counter === 1 || currentDeck === "noCurrentDeck") //Deal with errors
             {
 
                 var value = $('#deckList').find("option:first-child").val();
@@ -346,7 +346,7 @@ var cardFields = function(item, typeSync = "single") {
                     $('#addCard').html("<p><span style=\"color:red;\">Model " + currentNoteType + " is deleted in Anki.Create it or <input type='button' id='deleteModelFromCache' class='deleteModel' value='delete From cache'></span></p>");
                 } else {
                     $('#addCard').empty();
-                    $('#addCard').html("<p><span style=\"color:red;\">Model type not found. Please create it and refresh cache</span></p><input type='button' id='refreshData' class='refreshModel' style='background-color:#ffa500; 'value='Refresh Models'>");
+                    $('#addCard').html("<p><span style=\"color:red;\">Model type not found. Please create it and refresh cache</span></p><input type='button' id='refreshData' class='refreshModel' style=' background-color:#ffa500; 'value='Refresh Models'>");
 
                 }
 
@@ -896,9 +896,10 @@ function restore_All_Fields(fulfilled, item) {
     $("#addCard").empty();
 
     $.each(fulfilled, function(key, value) {
-        var icon;
-        var iconName;
-        var imageTitle;
+        let icon;
+        let iconName;
+        let imageTitle;
+        let fieldvalue;
         if (allSettings.stickyFields === true) {
             if (stickyFields.hasOwnProperty(currentNoteType)) {
                 if (stickyFields[currentNoteType][value] === true) {
@@ -923,7 +924,7 @@ function restore_All_Fields(fulfilled, item) {
         } else {
             icon = '';
         }
-        if (typeof savedFormFields[key] != "undefined" && savedFormFields[key] !== null) {
+        if (typeof savedFormFields[key] !== "undefined" && savedFormFields[key] !== null) {
             fieldvalue = savedFormFields[key].replace(/<p><\/p>/gi, "<br>").replace(/<p><br><\/p>/gi, "<br>");
 
         } else {
@@ -978,7 +979,7 @@ function restore_options() {
 function restoreShortcuts() {
 
 
-    var shortcuts = {
+    favourites.shortcuts = {
         Deck: "alt+shift+d",
         Cloze: "alt+shift+w",
         QuickSubmit: "ctrl+enter",
@@ -986,7 +987,7 @@ function restoreShortcuts() {
         Reset: "alt+shift+r"
 
     };
-    favourites.shortcuts = shortcuts;
+
     saveChanges("favourites", favourites);
     rebindAllKeys();
     getShortcutValues();
@@ -1486,7 +1487,7 @@ function parseAndToObject(arr) {
 
 function connectToAnki(callback) {
     background.ankiConnectRequest('version', 6)
-        .then(function(fulfilled) {
+        .then(function() {
             callback(true);
 
         })
@@ -1655,6 +1656,12 @@ $(document).ready(function() {
 
     });
 
+    //select settings for sync
+    if(allSettings.saveNotes===true)
+    {
+        $('#saveNotesToggle img').attr('src', "images/ankiMode.png");
+
+    }
 
     $(document).on('click', '#reloadExtension', function () {
 
@@ -1703,7 +1710,30 @@ $(document).ready(function() {
         themeMode = themeMode == "day" ? "night" : "day";
 
     });
+    //quick toggle sticky fields
+    $(document).on('click', '#saveNotesToggle', function () {
+            let modeNotify;
 
+        if (allSettings.saveNotes === true) {
+            $(this).children('img').attr('src', "images/localMode.png");
+            $(this).children('img').attr('title', "click to turn on check Anki first if fail then save note Mode");
+
+            modeNotify = "All notes will be saved locally without checking for Anki <br>";
+            allSettings.saveNotes = "trueLocal";
+
+
+        } else {
+            $(this).children('img').attr('src', "images/ankiMode.png");
+            $(this).children('img').attr('title', "click to turn on save note locally (useful for computer with no Anki)");
+
+            modeNotify = "All notes will be first sent to Anki.<br> If Anki is not running, they will be saved locally";
+
+            allSettings.saveNotes = true;
+        }
+
+            notifyError(modeNotify,"success","html");
+        saveChanges("allSettings", allSettings);
+    });
     //quick toggle sticky fields
     $(document).on('click', '#stickyFieldsToggle', function () {
 
@@ -2726,15 +2756,11 @@ function sendEachNoteAnki(item) {
 
 }
 
-function jq( myid ) {
-
-    return "#" + myid.replace( /(:|\.|\[|\]|,|=|@)/g, "\\$1" );
-
-}
 
 
 function submitToAnki() {
 
+    let params;
     //Getting Field types
     currentTags = $('#tags').val();
 
@@ -2745,7 +2771,7 @@ function submitToAnki() {
 
     }
 
-    //replace tags
+
     // debugLog("currenttags" + currentTags);
     var counter = 0;
     var arrayToSend = {};
@@ -2757,7 +2783,7 @@ function submitToAnki() {
         var value = $(this).attr('id').replace(/-Field/gi, "");
         sendValue = "";
         try {
-            if (typeof textfieldValue != "undefined" || textfieldValue != "<p><br></p>" || textfieldValue != "<p></p>" || textfieldValue != "<br>") {
+            if (typeof textfieldValue != "undefined" && textfieldValue != "<p><br></p>" && textfieldValue != "<p></p>" && textfieldValue !== "<br>") {
                 if (textfieldValue) {
 
                     sendValue = textfieldValue;
@@ -2779,7 +2805,16 @@ function submitToAnki() {
         arrayToSend[value] = sendValue;
 
     });
-    // debugLog(arrayToSend);
+
+
+     params = {
+        "note": {
+            "deckName": currentDeck,
+            "modelName": currentNoteType,
+            "fields": arrayToSend,
+            "tags": [currentTags]
+        }
+    };
 
     if (counter === 0) {
 
@@ -2801,15 +2836,14 @@ function submitToAnki() {
 
 
 
-    } else {
-        var params = {
-            "note": {
-                "deckName": currentDeck,
-                "modelName": currentNoteType,
-                "fields": arrayToSend,
-                "tags": [currentTags]
-            }
-        };
+    }
+    else if ( allSettings.saveNotes === "trueLocal") {
+        let valueToStore = JSON.stringify(params);
+        saveNotesLocally(valueToStore);
+
+    }
+
+    else {
 
         background.ankiConnectRequest("addNote", 6, params)
             .then(function(fulfilled) {
@@ -2817,7 +2851,7 @@ function submitToAnki() {
                 clearTextBoxes();
                 // debugLog(fulfilled);
 
-                notifyError("Note is added succesfully to Anki.", "success");
+                notifyError("Note is successfully added to Anki.", "success");
 
 
             })
@@ -2860,22 +2894,7 @@ function catchAnkiSubmitErrors(error, params) {
         if (allSettings.saveNotes === true) {
 
             var valueToStore = JSON.stringify(params);
-
-            if (allSavedNotes.indexOf(valueToStore) != "-1") {
-
-                notifyError("Note is already Saved in local list.", "error");
-
-
-            } else {
-                allSavedNotes.push(valueToStore);
-
-                notifyError("Note Saved successfully to locally saved notes list.", "success");
-                clearTextBoxes();
-                saveChanges("allSavedNotes", allSavedNotes);
-
-                $("#jsGrid").jsGrid("render");
-            }
-
+            saveNotesLocally(valueToStore);
 
         } else {
             notifyError("No, connection. Please, run Anki to Add card.<br> or Do you want <span style='color:#0000ff'> to save cards locally.?<br></span>Click <input type='button' style='background:#4CAF50' id='saveNotesConfirmButton' value='save cards locally'> to turn on settings.", "error", "html", "15000");
@@ -2887,6 +2906,35 @@ function catchAnkiSubmitErrors(error, params) {
         background.notifyUser("Error: " + error, "notifyalert");
         errorLogs.innerHTML = "<span style=\"color:red\";>No, connection. Please, run Anki to Add card</span>";
 
+    }
+}
+
+function saveNotesLocally(value)
+{
+    if (allSavedNotes.indexOf(value) != "-1") {
+
+        notifyError("Note is already Saved in local list.", "error");
+
+
+    } else {
+        allSavedNotes.push(value);
+
+            if(allSettings.saveNotes==="trueLocal")
+            {
+                notifyError("Note Saved successfully to locally saved notes list<br> without checking for Anki", "success","html");
+
+
+            }
+
+            else {
+
+                notifyError("Note Saved successfully to locally saved notes list.", "success");
+
+            }
+        clearTextBoxes();
+        saveChanges("allSavedNotes", allSavedNotes);
+
+        $("#jsGrid").jsGrid("render");
     }
 }
 

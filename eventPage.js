@@ -193,6 +193,8 @@ function ankiConnectRequest(action, version, params = {}) {
             resolve(window[action + "Saved"]);
 
         } else {
+
+
             const xhr = new XMLHttpRequest();
             xhr.addEventListener('error', () => reject('failed to connect to AnkiConnect'));
             xhr.addEventListener('load', () => {
@@ -492,6 +494,7 @@ chrome.contextMenus.onClicked.addListener(function(clickedData) {
 
 function submitToAnki() {
     saveChanges("savedFormFields", savedFormFields, "local");
+    let params;
     if (typeof currentFields != "undefined") {
         currentTags = "";
         var counter = 0;
@@ -501,7 +504,7 @@ function submitToAnki() {
 
             try {
                 var textfieldValue = savedFormFields[index];
-                if (typeof textfieldValue != "undefined" && textfieldValue != "<p><br></p>") {
+                if (typeof textfieldValue != "undefined" && textfieldValue != "<p><br></p>"&&textfieldValue != "<br>") {
                     sendValue = textfieldValue;
                     counter++;
                 } else {
@@ -518,8 +521,15 @@ function submitToAnki() {
 
         });
 
-        debugLog(savedFormFields);
-        debugLog(arrayToSend);
+       params = {
+            "note": {
+                "deckName": currentDeck,
+                "modelName": currentNoteType,
+                "fields": arrayToSend,
+                "tags": [currentTags]
+            }
+        };
+
         if (counter === 0) {
 
             if (connectionStatus === false) {
@@ -532,18 +542,18 @@ function submitToAnki() {
             }
 
 
-        } else {
-            var params = {
-                "note": {
-                    "deckName": currentDeck,
-                    "modelName": currentNoteType,
-                    "fields": arrayToSend,
-                    "tags": [currentTags]
-                }
-            };
+        }
+
+        else if ( allSettings.saveNotes === "trueLocal") {
+            let valueToStore = JSON.stringify(params);
+            saveNotesLocally(valueToStore);
+
+        }
+
+        else {
+
             ankiConnectRequest("addNote", 6, params)
                 .then(function(fulfilled) {
-
 
                     notifyUser("Note is added to Anki succesfully.", "notifyalert");
                     chrome.runtime.sendMessage({
@@ -590,22 +600,8 @@ function submitToAnki() {
 
                             if (allSettings.saveNotes === true) {
 
-                                var valueToStore = JSON.stringify(params);
-
-                                if (allSavedNotes.indexOf(valueToStore) != "-1") {
-
-                                    notifyUser("Note is already Saved in local list.", "notifyalert");
-
-
-                                } else {
-                                    allSavedNotes.push(valueToStore);
-
-                                    notifyUser("Note Saved to storage successfully", "notifyalert");
-                                    saveChanges("allSavedNotes", allSavedNotes);
-                                    clearStickySettings();
-
-
-                                }
+                                let valueToStore = JSON.stringify(params);
+                                saveNotesLocally(valueToStore);
                             } else {
                                 notifyUser("No connection.Turn on settings-> saveNotes to save in LocalStorage ", "notifyalert");
 
@@ -615,11 +611,26 @@ function submitToAnki() {
                             notifyUser("Error: " + error, "notifyalert");
                         }
                     }
-                }).finally(function() {
-
-
-            });
+                })
         }
+
+    }
+}
+
+function saveNotesLocally(value){
+
+    if (allSavedNotes.indexOf(value) != "-1") {
+
+        notifyUser("Note is already Saved in local list.", "notifyalert");
+
+
+    } else {
+        allSavedNotes.push(value);
+
+        notifyUser("Note Saved to storage successfully", "notifyalert");
+        saveChanges("allSavedNotes", allSavedNotes);
+        clearStickySettings();
+
 
     }
 }
