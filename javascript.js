@@ -986,6 +986,7 @@ function restoreShortcuts() {
         Model: "alt+shift+c",
         Reset: "alt+shift+r"
 
+
     };
 
     saveChanges("favourites", favourites);

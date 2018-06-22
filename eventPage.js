@@ -493,7 +493,7 @@ chrome.contextMenus.onClicked.addListener(function(clickedData) {
 
 
 function submitToAnki() {
-    saveChanges("savedFormFields", savedFormFields, "local");
+    // saveChanges("savedFormFields", savedFormFields, "local");
     let params;
     if (typeof currentFields != "undefined") {
         currentTags = "";
@@ -504,7 +504,8 @@ function submitToAnki() {
 
             try {
                 var textfieldValue = savedFormFields[index];
-                if (typeof textfieldValue != "undefined" && textfieldValue != "<p><br></p>"&&textfieldValue != "<br>") {
+                if (typeof textfieldValue != "undefined" && textfieldValue != "<p><br></p>"&&textfieldValue != "<br>"&&textfieldValue !== null) {
+
                     sendValue = textfieldValue;
                     counter++;
                 } else {
@@ -575,7 +576,7 @@ function submitToAnki() {
 
                             } else {
 
-                                notifyUser("This is a duplicate Note. Please change main field or s", "notifyalert");
+                                notifyUser("This is a duplicate Note. Please change main field.", "notifyalert");
 
                             }
 
