@@ -1,6 +1,6 @@
 {
   "name": "Anki Quick Adder",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "short_name": "Anki Adder",
   "description": "This extension provides the ability to create anki cards directly from Google Chrome on your Anki Desktop.",
   "background":{
