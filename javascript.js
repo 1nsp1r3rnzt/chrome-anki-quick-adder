@@ -71,7 +71,6 @@ document.addEventListener('DOMContentLoaded', restore_options);
 var deckNames = function() {
     background.ankiConnectRequest('deckNames', 6)
         .then(function(fulfilled) {
-            let textFieldValue;
             let counter = 0;
             $.each(fulfilled.sort(), function(key, value) {
                 //cleaning names
@@ -1883,12 +1882,10 @@ $(document).ready(function() {
         for (var item of value) {
             currentFav.push(item.id);
         }
-        if (!(stringifyAndCompare(currentFav, favourites.deck))) {
-
 
             favourites.deck = currentFav;
             saveChanges("favourites", favourites);
-        }
+
 
     });
 
@@ -1899,23 +1896,19 @@ $(document).ready(function() {
         for (let item of value) {
             currentFav.push(item.id);
         }
-
-        saveChanges("favourites", favourites);
-        if (!(stringifyAndCompare(currentFav, favourites.model))) {
-            favourites.model = currentFav;
+         favourites.model = currentFav;
             saveChanges("favourites", favourites);
-        }
+
     });
 
     $('#FavouriteButtons').change(function () {
+
         let value = $(this).select2('data');
         let currentFav = [];
         for (let item of value) {
             currentFav.push(item.id);
         }
-        favourites.buttons = currentFav;
 
-        if (!(stringifyAndCompare(currentFav, favourites.buttons))) {
 
 
             favourites.buttons = currentFav;
@@ -1925,7 +1918,7 @@ $(document).ready(function() {
             }
             createDynamicFields();
             saveChanges("favourites", favourites);
-        }
+
 
     });
 

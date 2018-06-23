@@ -557,7 +557,7 @@ function submitToAnki() {
                 "tags": [currentTags]
             }
         };
-
+        console.log(params);
         if (counter === 0) {
 
             if (connectionStatus === false) {
@@ -674,9 +674,16 @@ function clearStickySettings(type = "single") {
 
     } else {
 
+        if (!isValidValue(stickyFields)) {
+            stickyFields = {};
+        }
+        if (!(currentNoteType in stickyFields)) {
+            stickyFields[currentNoteType] = {};
 
+        }
             if (savedFormFields.length > 0) {
                 for (let i = 0; i < savedFormFields.length; i++) {
+
                     let checkKeyvalue = stickyFields[currentNoteType][currentFields[i]];
                     if (checkKeyvalue === false || typeof checkKeyvalue == "undefined") {
                         savedFormFields[i] = '';
@@ -687,13 +694,7 @@ function clearStickySettings(type = "single") {
                 savedFormFields = [];
             }
 
-            if (!isValidValue(stickyFields)) {
-                stickyFields = {};
-            }
-            if (!(currentNoteType in stickyFields)) {
-                stickyFields[currentNoteType] = {};
 
-            }
 
 
 
