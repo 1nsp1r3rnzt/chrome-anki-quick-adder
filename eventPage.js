@@ -557,7 +557,6 @@ function submitToAnki() {
                 "tags": [currentTags]
             }
         };
-        console.log(params);
         if (counter === 0) {
 
             if (connectionStatus === false) {

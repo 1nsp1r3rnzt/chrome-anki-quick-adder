@@ -786,7 +786,6 @@ function savedNotesLoad() {
         $("textarea[id^='dialog-']").each(function() {
             var textfieldId = $(this).attr('id');
             var textfieldValue = $(this).val();
-            console.log(textfieldValue);
             if (background.isTextFieldValid(textfieldValue)) {
                     textFieldEmptyCounter++;
                 }
@@ -3156,7 +3155,6 @@ function clearNotes() {
 
                 background.restore_defaults();
 
-            console.log(Items);
             setTimeout(function() {
                 location.reload();
 
