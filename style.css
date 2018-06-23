@@ -99,6 +99,7 @@ td.jsgrid-cell.dialogTableError{
 
 .jsgrid-cell{
     overflow:hidden;
+    word-wrap: break-word;
 }
 .select-style:after {
     top: 50%;
@@ -139,6 +140,10 @@ td.jsgrid-cell.dialogTableError{
 #errorLogs a{
     color: #0000ff;
     text:16px;
+}
+
+#errorLogs {
+    min-height: 20px;
 }
 
 textarea {

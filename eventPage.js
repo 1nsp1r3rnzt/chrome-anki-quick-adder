@@ -20,14 +20,14 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 
     } else if (message.action === "importedNotes") {
 
-        if (typeof message.data !== "undefined") {
+        if (isValidValue(message.data)) {
 
             try {
                 let importedNotes = JSON.parse(message.data);
                 if (importedNotes.length > 0) {
                     let duplicateCounter = 0;
                     let importNotesCounter = 0;
-                    if (typeof allSavedNotes == "undefined") {
+                    if (!isValidValue(allSavedNotes)) {
                         allSavedNotes = [];
 
                     }
@@ -133,11 +133,11 @@ chrome.commands.onCommand.addListener(function(cmd) {
 
                         var currentFieldName = currentFields[fieldToAdd];
 
-                        if (typeof currentFieldName != "undefined") {
+                        if (isValidValue(currentFieldName)) {
 
 
                             if (allSettings.appendModeSettings === 1) {
-                                if (typeof savedFormFields[fieldToAdd] !== "undefined") {
+                                if (isValidValue(savedFormFields[fieldToAdd])) {
                                     savedFormFields[fieldToAdd] = savedFormFields[fieldToAdd] + "<br>" + currentText;
                                     createNotification("Appended: " + displayText + " to field: " + currentFieldName);
 
@@ -274,7 +274,7 @@ function createNotification(notificationTitle) {
 
     var manifestVersion;
 
-    if (typeof manifestName === "undefined") {
+    if (!isValidValue(manifestName)) {
         manifestName = "Anki Quick Adder";
 
     } else {
@@ -282,7 +282,7 @@ function createNotification(notificationTitle) {
 
 
     }
-    if (typeof manifestVersion === "undefined") {
+    if (!isValidValue(manifestVersion)) {
         manifestVersion = manifest.version;
     } else {
         manifestVersion = "1.00";
@@ -330,6 +330,28 @@ function findRegex(findWhat, errorz) {
 
 }
 
+function restore_defaults() {
+
+    if (typeof allSettings == "undefined") {
+        allSettings = {};
+    }
+    currentNoteType=null;
+    currentFields=null;
+    currentDeck=null;
+    savedDialogFields=null;
+    allSettings.debugStatus = 0;
+    allSettings.appendModeSettings = 1;
+    allSettings.syncFrequency = "Manual";
+    allSettings.forcePlainText = true;
+    allSettings.cleanPastedHTML = true;
+    allSettings.saveNotes = true;
+    allSettings.stickyFields = true;
+    allSettings.removeDuplicateNotes = false;
+    saveChanges("allSettings", allSettings);
+}
+
+
+
 document.addEventListener('DOMContentLoaded', restore_options);
 
 
@@ -349,18 +371,7 @@ function isUpdatedNow(openUrl=0) {
 }
 //installed defaults
 function isInstalledNow() {
-    var allSettings = {};
-    allSettings.forcePlainText = true;
-    allSettings.cleanPastedHTML = true;
-    allSettings.saveNotes = true;
-    allSettings.removeDuplicateNotes = false;
-    allSettings.stickyFields = false;
-    allSettings.appendModeSettings = 1;
-    allSettings.debugStatus = 0;
-    allSettings.syncFrequency = "Manual";
-    saveChanges("allSettings", allSettings);
-
-    allSettings.debugStatus = 0;
+    restore_defaults();
     var win = window.open("popup.html", "extension_popup", "width=300,height=400,status=no,scrollbars=yes,resizable=no");
 
     setTimeout(function() {
@@ -390,6 +401,7 @@ chrome.extension.onConnect.addListener(function(port) {
 
 
 function restore_options() {
+
     getChanges("connectionStatus");
     getChanges("favourites");
     getChanges("deckNamesSaved");
@@ -418,7 +430,7 @@ chrome.contextMenus.onClicked.addListener(function(clickedData) {
             debugLog(savedFormFields);
             var fieldNumber = currentFields.indexOf(currentFieldName);
             if (allSettings.appendModeSettings === 1) {
-                if (typeof savedFormFields[fieldNumber] != "undefined") {
+                if (isValidValue(savedFormFields[fieldNumber])) {
                     savedFormFields[fieldNumber] = savedFormFields[fieldNumber] + "<br>" + clickedData.selectionText;
 
                 } else
@@ -492,10 +504,25 @@ chrome.contextMenus.onClicked.addListener(function(clickedData) {
 });
 
 
+function isValidValue(value)
+{
+    if(value===null||typeof value ==="undefined")
+    {
+        return false;
+
+    }
+    else
+    {
+        return true;
+
+    }
+
+}
+
 function submitToAnki() {
     // saveChanges("savedFormFields", savedFormFields, "local");
     let params;
-    if (typeof currentFields != "undefined") {
+    if (isValidValue(currentFields)) {
         currentTags = "";
         var counter = 0;
         var arrayToSend = {};
@@ -504,7 +531,7 @@ function submitToAnki() {
 
             try {
                 var textfieldValue = savedFormFields[index];
-                if (typeof textfieldValue != "undefined" && textfieldValue != "<p><br></p>"&&textfieldValue != "<br>"&&textfieldValue !== null) {
+                if (isTextFieldValid(textfieldValue)) {
 
                     sendValue = textfieldValue;
                     counter++;
@@ -594,7 +621,7 @@ function submitToAnki() {
 
                         } else if (findRegex("failed to connect to AnkiConnect", currentError)) {
                             //defaults save Notes
-                            if (typeof allSettings.saveNotes === "undefined") {
+                            if (!isValidValue(allSettings.saveNotes)) {
                                 allSettings.saveNotes = true;
                                 saveChanges("allSettings", allSettings);
                             }
@@ -660,7 +687,7 @@ function clearStickySettings(type = "single") {
                 savedFormFields = [];
             }
 
-            if (typeof stickyFields == "undefined") {
+            if (!isValidValue(stickyFields)) {
                 stickyFields = {};
             }
             if (!(currentNoteType in stickyFields)) {
@@ -673,7 +700,7 @@ function clearStickySettings(type = "single") {
         }
 
     //default
-    if (typeof allSettings.stickyFields === "undefined") {
+    if (!isValidValue(allSettings.stickyFields)) {
         allSettings.stickyFields = true;
         saveChanges("allSettings", allSettings);
     }
@@ -930,7 +957,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
         }
 
         if ("currentFields" == key) {
-            if (typeof deckNamesSaved != "undefined" && modelNamesSaved != "undefined") {
+            if (isValidValue(deckNamesSaved) && isValidValue(modelNamesSaved)) {
                 currentFields = storageChange.newValue;
 
                 updateContextMenu();
@@ -954,10 +981,10 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
         if ("currentDeck" == key) {
 
 
-            if (typeof storageChange.newValue != "undefined") {
+            if (isValidValue(storageChange.newValue)) {
                 currentDeck = storageChange.newValue;
                 debugLog("current Fields are" + currentFields);
-                if (typeof currentFields != "undefined") {
+                if (isValidValue(currentFields)) {
 
                     var deckNameFiltered = (storageChange.newValue).replace(/:/gi, ">");
 
@@ -1053,6 +1080,27 @@ function saveChanges(key, value, type = "sync") {
         });
     }
 }
+function isTextFieldValid(value)
+{
+    if(value)
+
+    {
+        if(value === "<p><br></p>" || value === "<p></p>" || value === "<br>")
+        {
+            return false;
+        }
+        else {
+            return true;
+        }
+
+    }
+
+    else {
+
+        return false;
+    }
+
+}
 
 function getChanges(key, type = "sync") {
     var valueReturn;
@@ -1108,6 +1156,7 @@ debugLog = (function(undefined) {
     debugLog.prototype.write = function(args) {
 
         /// * https://stackoverflow.com/a/3806596/1037948
+
         var suffix = {
             "@": (this.lineNumber ?
                     this.fileName + ':' + this.lineNumber + ":1" // add arbitrary column value for chrome linking
@@ -1128,6 +1177,7 @@ debugLog = (function(undefined) {
     };
     var extractLineNumberFromStack = function(stack) {
 
+
         if (!stack) return '?'; // fix undefined issue reported by @sigod
 
         // correct line number according to how Log().write implemented
@@ -1141,11 +1191,7 @@ debugLog = (function(undefined) {
     };
 
     return function(params) {
-
         // only if explicitly true somewhere
-        if (typeof allSettings === "undefined") {
-            allSettings = {};
-        }
         if (typeof allSettings.debugStatus === typeof undefined || allSettings.debugStatus === 0) return;
 
         // call handler extension which provides stack trace
