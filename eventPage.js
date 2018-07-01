@@ -1,8 +1,7 @@
-
-
 // /*jshint esversion: 6 */
 var currentFields;
-var currentNoteType;var savedFormFields = savedFormFields || [];
+var currentNoteType;
+var savedFormFields = savedFormFields || [];
 var currentDeck;
 var deckNamesSaved;
 var manifest = chrome.runtime.getManifest();
@@ -14,7 +13,7 @@ var storedFieldsForModels = storedFieldsForModels || {};
 var allSettings = {};
 var allSavedNotes = [];
 var stickyFields = {};
-
+var favourites = {};
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     if (message.action === "wakeup") {
 
@@ -77,7 +76,6 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
 
 
-
 /* The function that finds and returns the selected text */
 var funcToInject = function() {
     var selection = window.getSelection();
@@ -111,6 +109,7 @@ chrome.commands.onCommand.addListener(function(cmd) {
                     try {
 
                         var fieldToAdd;
+                        var displayText;
                         var currentText = selectedTextPerFrame[0];
 
                         if (cmd === "add-to-first-field") {
@@ -335,10 +334,10 @@ function restore_defaults() {
     if (typeof allSettings == "undefined") {
         allSettings = {};
     }
-    currentNoteType=null;
-    currentFields=null;
-    currentDeck=null;
-    savedDialogFields=null;
+    currentNoteType = null;
+    currentFields = null;
+    currentDeck = null;
+    savedDialogFields = null;
     allSettings.debugStatus = 0;
     allSettings.appendModeSettings = 1;
     allSettings.syncFrequency = "Manual";
@@ -346,7 +345,10 @@ function restore_defaults() {
     allSettings.cleanPastedHTML = true;
     allSettings.saveNotes = true;
     allSettings.stickyFields = true;
+    allSettings.favouriteDeckMenu = 0;
+    allSettings.favouriteModelMenu = 0;
     allSettings.removeDuplicateNotes = false;
+
     saveChanges("allSettings", allSettings);
 }
 
@@ -357,16 +359,15 @@ document.addEventListener('DOMContentLoaded', restore_options);
 
 
 //updated
-function isUpdatedNow(openUrl=0) {
+function isUpdatedNow(openUrl = 0) {
 
- if(openUrl===1)
- {
-     chrome.tabs.create({
-         url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"
-     }, function(tab) {
-         debugLog("update tab launched");
-     });
- }
+    if (openUrl === 1) {
+        chrome.tabs.create({
+            url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"
+        }, function(tab) {
+            debugLog("update tab launched");
+        });
+    }
 
 }
 //installed defaults
@@ -454,7 +455,7 @@ chrome.contextMenus.onClicked.addListener(function(clickedData) {
 
     }
 
-    if (currentItem === "ankiRecoverMenu" || currentItem === "ankiRecoverMenuSub") {
+    if (currentItem === "ankiRecoverMenu" || currentItem === "ankiRecoverSubMenu") {
 
         updateContextMenu();
 
@@ -504,15 +505,11 @@ chrome.contextMenus.onClicked.addListener(function(clickedData) {
 });
 
 
-function isValidValue(value)
-{
-    if(value===null||typeof value ==="undefined")
-    {
+function isValidValue(value) {
+    if (value === null || typeof value === "undefined") {
         return false;
 
-    }
-    else
-    {
+    } else {
         return true;
 
     }
@@ -549,7 +546,7 @@ function submitToAnki() {
 
         });
 
-       params = {
+        params = {
             "note": {
                 "deckName": currentDeck,
                 "modelName": currentNoteType,
@@ -569,22 +566,18 @@ function submitToAnki() {
             }
 
 
-        }
-
-        else if ( allSettings.saveNotes === "trueLocal") {
+        } else if (allSettings.saveNotes === "trueLocal") {
             let valueToStore = JSON.stringify(params);
             saveNotesLocally(valueToStore);
 
-        }
-
-        else {
+        } else {
 
             ankiConnectRequest("addNote", 6, params)
                 .then(function(fulfilled) {
 
                     notifyUser("Note is added to Anki succesfully.", "notifyalert");
                     chrome.runtime.sendMessage({
-                        msg:"noteAdded",
+                        msg: "noteAdded",
                         data: ""
                     });
                     clearStickySettings();
@@ -638,13 +631,13 @@ function submitToAnki() {
                             notifyUser("Error: " + error, "notifyalert");
                         }
                     }
-                })
+                });
         }
 
     }
 }
 
-function saveNotesLocally(value){
+function saveNotesLocally(value) {
 
     if (allSavedNotes.indexOf(value) != "-1") {
 
@@ -667,7 +660,7 @@ function clearStickySettings(type = "single") {
 
 
 
-    if (type === "all"||allSettings.stickyFields !== true) {
+    if (type === "all" || allSettings.stickyFields !== true) {
 
         savedFormFields = [];
 
@@ -680,24 +673,23 @@ function clearStickySettings(type = "single") {
             stickyFields[currentNoteType] = {};
 
         }
-            if (savedFormFields.length > 0) {
-                for (let i = 0; i < savedFormFields.length; i++) {
+        if (savedFormFields.length > 0) {
+            for (let i = 0; i < savedFormFields.length; i++) {
 
-                    let checkKeyvalue = stickyFields[currentNoteType][currentFields[i]];
-                    if (checkKeyvalue === false || typeof checkKeyvalue == "undefined") {
-                        savedFormFields[i] = '';
-                    }
+                let checkKeyvalue = stickyFields[currentNoteType][currentFields[i]];
+                if (checkKeyvalue === false || typeof checkKeyvalue == "undefined") {
+                    savedFormFields[i] = '';
                 }
-
-            } else {
-                savedFormFields = [];
             }
 
-
-
-
-
+        } else {
+            savedFormFields = [];
         }
+
+
+
+
+    }
 
     //default
     if (!isValidValue(allSettings.stickyFields)) {
@@ -816,11 +808,10 @@ function createContextMenu() {
 
     //update deck menu :child->Main Menu
     debugLog("value is " + currentDeck);
-    var displayDeck = currentDeck.replace(/:/gi, ">");
     var currentDeckMenu = {
         "parentId": "ankiAddWord",
         "id": "ankiCurrentDeck",
-        "title": "Deck: " + displayDeck,
+        "title": "Deck: " + filteredDeckName(currentDeck,"mainMenu"),
         "contexts": ["selection", "all"]
     };
     chrome.contextMenus.create(currentDeckMenu);
@@ -836,24 +827,24 @@ function createContextMenu() {
     };
     chrome.contextMenus.create(separatorz2);
     //Decksublist :child->ankiCurrentDeck->
+    let deckToSelect;
 
-    $.each(deckNamesSaved.sort(), function(index, value) {
+    if (allSettings.favouriteDeckMenu == 1 && favourites.deck.length > 0) {
+        deckToSelect = favourites.deck;
+
+    } else {
+        deckToSelect = deckNamesSaved;
+    }
+
+    $.each(deckToSelect.sort(), function(index, value) {
         var textFieldValue;
         // var displayDeck = value.replace(/:/gi, ">");
-        if (value.indexOf("::") !== -1) {
-            var stringLength = value.substring(0, value.lastIndexOf("::") + 2).length;
-            var last = value.substring(value.lastIndexOf("::") + 2, value.length);
-            var spaceLength = stringLength - 10 > 5 ? stringLength - 10 : "5";
 
-            textFieldValue = "\xA0".repeat(spaceLength) + last;
-        } else {
-            textFieldValue = value;
-        }
 
         var childItem = {
             "parentId": "ankiCurrentDeck",
             "id": "secretDeckKey12z-" + value,
-            "title": textFieldValue,
+            "title": filteredDeckName(value),
             "contexts": ["selection", "all"]
         };
         chrome.contextMenus.create(childItem);
@@ -880,8 +871,14 @@ function createContextMenu() {
         "contexts": ["selection", "all"]
     };
     chrome.contextMenus.create(currentModelMenu);
+    let modelToSelect;
 
-    $.each(modelNamesSaved.sort(), function(index, value) {
+    if (allSettings.favouriteModelMenu == 1 && favourites.model.length > 0) {
+        modelToSelect = favourites.model;
+    } else {
+        modelToSelect = modelNamesSaved;
+    }
+    $.each(modelToSelect.sort(), function(index, value) {
         var textFieldValue = value;
 
         var childItem = {
@@ -918,88 +915,48 @@ function createContextMenu() {
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
 
-    for (var key in changes) {
-        var storageChange = changes[key];
+    for (let key in changes) {
+        let storageChange = changes[key];
         debugLog("key:" + key + " new value below:");
         debugLog(storageChange.newValue);
 
 
-        if ("deckNamesSaved" == key) {
-            deckNamesSaved = storageChange.newValue;
+        let settingsToSave = [
+            "getTagsSaved",
+            "deckNamesSaved", "modelNamesSaved",
+            "savedFormFields",
+            "allSavedNotes",
+            "stickyFields",
+            "allSettings",
+            "currentNoteType",
+            "storedFieldsForModels"
+        ];
 
+        if (settingsToSave.indexOf(key) !== -1) {
+            window[key] = storageChange.newValue;
         }
-        if ("getTagsSaved" == key) {
-            getTagsSaved = storageChange.newValue;
+        //setting with validation
 
-        }
-
-        if ("modelNamesSaved" == key) {
-            modelNamesSaved = storageChange.newValue;
-
-        }
-
-
-        if ("savedFormFields" == key) {
-
-            savedFormFields = storageChange.newValue;
-
-        }
-
-        if ("allSavedNotes" == key) {
-
-            allSavedNotes = storageChange.newValue;
-
-        }
-
-        if ("stickyFields" == key) {
-            stickyFields = storageChange.newValue;
-
-        }
-
-        if ("currentFields" == key) {
+        if ("currentFields" === key) {
             if (isValidValue(deckNamesSaved) && isValidValue(modelNamesSaved)) {
                 currentFields = storageChange.newValue;
-
                 updateContextMenu();
 
             }
 
         }
-        if ("allSettings" == key) {
 
-            allSettings = storageChange.newValue;
-
-        }
-
-        if ("currentNoteType" == key) {
-
-            currentNoteType = storageChange.newValue;
-        }
-
-
-
-        if ("currentDeck" == key) {
-
+        if ("favourites" === key) {
 
             if (isValidValue(storageChange.newValue)) {
-                currentDeck = storageChange.newValue;
-                debugLog("current Fields are" + currentFields);
-                if (isValidValue(currentFields)) {
+                favourites = storageChange.newValue;
+                if (allSettings.favouriteDeckMenu == 1 || allSettings.favouriteModelMenu == 1) {
+                    chrome.contextMenus.removeAll(function() {
 
-                    var deckNameFiltered = (storageChange.newValue).replace(/:/gi, ">");
+                        debugLog("Creating all menu");
+                        createContextMenu();
+                    });
 
-
-                    var currentDeckMenu = {
-                        "parentId": "ankiAddWord",
-                        "title": "Deck:" + deckNameFiltered,
-                        "contexts": ["selection", "all"]
-                    };
-
-                    chrome.contextMenus.update("ankiCurrentDeck", currentDeckMenu);
-
-                } else {
-
-                    debugLog("fields are unspecified.");
                 }
             }
 
@@ -1007,12 +964,24 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 
         }
 
-        if ("storedFieldsForModels" == key) {
 
-            storedFieldsForModels = storageChange.newValue;
+
+        if ("currentDeck" === key) {
+
+
+            if (isValidValue(storageChange.newValue)) {
+                currentDeck = storageChange.newValue;
+                debugLog("current Fields are" + currentFields);
+                if (isValidValue(currentFields)) {
+                    updateContextMenu();
+                }
+
+
+            }
         }
 
-        if ("connectionStatus" == key) {
+
+        if ("connectionStatus" === key) {
             if (storageChange.newValue === false) {
                 createRecoverMenu();
 
@@ -1033,6 +1002,28 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 
 });
 
+function filteredDeckName(value,type="subMenu")
+{
+    if (value.indexOf("::") !== -1) {
+        var stringLength = value.substring(0, value.lastIndexOf("::") + 2).length;
+        var last = value.substring(value.lastIndexOf("::") + 2, value.length);
+        var spaceLength = stringLength - 10 > 5 ? stringLength - 10 : "5";
+        if(type=="mainMenu")
+        {
+            return last;
+
+
+        }
+        else
+        {
+            return "\xA0".repeat(spaceLength) + last;
+
+        }
+    } else {
+       return value;
+    }
+
+}
 
 function saveChanges(key, value, type = "sync") {
     // Check that there's some code there.
@@ -1049,10 +1040,10 @@ function saveChanges(key, value, type = "sync") {
             [key]: value
         }, function() {
 
-            var error = chrome.runtime.lastError;
+            let error = chrome.runtime.lastError;
             if (error) {
                 if (allSettings.debugStatus === 1) {
-                    notifyError("Can't save" + key + JSON.stringify(error), "error,text,3000");
+                    notifyUser("Can't save" + key + JSON.stringify(error), "error,text,3000");
 
                 }
             }
@@ -1070,7 +1061,7 @@ function saveChanges(key, value, type = "sync") {
             var error = chrome.runtime.lastError;
             if (error) {
                 if (allSettings.debugStatus === 1) {
-                    notifyError("Can't save" + key + JSON.stringify(error), "error,text,3000");
+                    notifyUser("Can't save" + key + JSON.stringify(error), "error,text,3000");
 
                 }
             }
@@ -1080,22 +1071,18 @@ function saveChanges(key, value, type = "sync") {
         });
     }
 }
-function isTextFieldValid(value)
-{
-    if(value)
+
+function isTextFieldValid(value) {
+    if (value)
 
     {
-        if(value === "<p><br></p>" || value === "<p></p>" || value === "<br>")
-        {
+        if (value === "<p><br></p>" || value === "<p></p>" || value === "<br>") {
             return false;
-        }
-        else {
+        } else {
             return true;
         }
 
-    }
-
-    else {
+    } else {
 
         return false;
     }

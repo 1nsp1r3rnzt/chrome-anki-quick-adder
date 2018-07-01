@@ -96,11 +96,18 @@ form p{
 td.jsgrid-cell.dialogTableError{
     color: #ff0000;
 }
+*[contenteditable="true"]{display: inline-block;
+min-width: 100%;
+    max-width: 100%;
 
+    word-wrap: break-word;
+}
 .jsgrid-cell{
     overflow:hidden;
     word-wrap: break-word;
 }
+
+
 .select-style:after {
     top: 50%;
     left: 95%;
