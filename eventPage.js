@@ -135,7 +135,7 @@ chrome.commands.onCommand.addListener(function(cmd) {
                         if (isValidValue(currentFieldName)) {
 
 
-                            if (allSettings.appendModeSettings === 1) {
+                            if (allSettings.appendModeSettings == 1) {
                                 if (isValidValue(savedFormFields[fieldToAdd])) {
                                     savedFormFields[fieldToAdd] = savedFormFields[fieldToAdd] + "<br>" + currentText;
                                     createNotification("Appended: " + displayText + " to field: " + currentFieldName);
@@ -339,7 +339,6 @@ function restore_defaults() {
     currentDeck = null;
     savedDialogFields = null;
     allSettings.debugStatus = 0;
-    allSettings.appendModeSettings = 1;
     allSettings.syncFrequency = "Manual";
     allSettings.forcePlainText = true;
     allSettings.cleanPastedHTML = true;
@@ -430,7 +429,7 @@ chrome.contextMenus.onClicked.addListener(function(clickedData) {
             var currentFieldName = currentItem.replace(/secretFieldKey12z-/gi, "");
             debugLog(savedFormFields);
             var fieldNumber = currentFields.indexOf(currentFieldName);
-            if (allSettings.appendModeSettings === 1) {
+            if (allSettings.appendModeSettings == 1) {
                 if (isValidValue(savedFormFields[fieldNumber])) {
                     savedFormFields[fieldNumber] = savedFormFields[fieldNumber] + "<br>" + clickedData.selectionText;
 
