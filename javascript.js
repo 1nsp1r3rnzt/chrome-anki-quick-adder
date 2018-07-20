@@ -481,6 +481,7 @@ function selectEditDialogOptions(DialogValueToSelect, whatElement) {
 function createDialogFields(localFields, noteType) {
     $('#dialogAddCard').empty();
     for (let key in localFields) {
+
         let localFieldValue;
         if (noteType === "Edit" || noteType === "Add") {
             if (localFields[key] !== null) {
@@ -489,8 +490,10 @@ function createDialogFields(localFields, noteType) {
 
             } else {
                 localFieldValue = "";
+
             }
-            $('#dialogAddCard').append('<label for="' + key + '-Field">' + key + '</label><textarea class="fieldsToMaintain dialogFields" id="dialog-' + key + '-Field" name="' + key + '">' + localFieldValue + '</textarea><br>');
+
+             $('#dialogAddCard').append('<label for="' + key + '-Field">' + key + '</label><textarea class="fieldsToMaintain dialogFields" id="dialog-' + key + '-Field" name="' + key + '">' + localFieldValue + '</textarea><br>');
 
 
         } else {
@@ -500,6 +503,8 @@ function createDialogFields(localFields, noteType) {
         }
 
     }
+    //retreive Tags
+
     createDynamicFields();
 
 }
@@ -723,7 +728,6 @@ function savedNotesLoad() {
             selectEditDialogOptions(editNote.modelName, "#dialogModelList");
             createDialogFields(editNote.allHiddenFields, "Edit");
 
-
         } else if (dialogType === "Add") {
 
             var allFieldsRetreived = {};
@@ -793,9 +797,7 @@ function savedNotesLoad() {
 
 
             if (counter === 0) {
-
-
-                tempFirstField = textfieldValue.slice(0, 30);
+    tempFirstField = textfieldValue.slice(0, 30);
 
 
                 counter++;
@@ -2784,7 +2786,7 @@ function sendEachNoteAnki(item) {
 
 function submitToAnki() {
 
-    let params;
+    let params=null;
     //Getting Field types
     currentTags = $('#tags').val();
 
@@ -2802,7 +2804,7 @@ function submitToAnki() {
     var sendValue;
     let lastFieldError = [];
 
-    $("textarea[class^='fieldsToMaintain']").each(function() {
+    $("#addCard textarea").each(function() {$
         var textfieldValue = $(this).val();
         var value = $(this).attr('id').replace(/-Field/gi, "");
         sendValue = "";
