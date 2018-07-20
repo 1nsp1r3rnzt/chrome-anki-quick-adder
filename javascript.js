@@ -727,6 +727,7 @@ function savedNotesLoad() {
             selectEditDialogOptions(editNote.deckName, "#dialogDeckList");
             selectEditDialogOptions(editNote.modelName, "#dialogModelList");
             createDialogFields(editNote.allHiddenFields, "Edit");
+            $('#dialogTags').val(editNote.tags);
 
         } else if (dialogType === "Add") {
 
