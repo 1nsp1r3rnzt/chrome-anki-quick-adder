@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', restore_options);
 
 //updated
 function isUpdatedNow(openUrl = 0) {
-
+    createContextMenu();
     if (openUrl === 1) {
         chrome.tabs.create({
             url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"
