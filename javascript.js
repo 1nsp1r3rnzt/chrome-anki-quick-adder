@@ -890,7 +890,7 @@ function savedNotesLoad() {
 }
 
 function removeSettings(value) {
-    if (isValidValue(value)) {
+    if (!isValidValue(value)) {
         return false;
     } else {
 
