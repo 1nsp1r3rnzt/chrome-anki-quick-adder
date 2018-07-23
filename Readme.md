@@ -2,6 +2,10 @@
 
 [<img src="https://github.com/1nsp1r3rnzt/chrome-anki-quick-adder/blob/master/docs/images/icon.png?raw=true&s=200">](https://chrome.google.com/webstore/detail/anki-quick-adder/gpbcbbajoagdgnokieocaplbhkiidmmb)
 
+![Chrome Web Store](https://img.shields.io/chrome-web-store/v/gpbcbbajoagdgnokieocaplbhkiidmmb.svg)
+
+![chrome users](https://img.shields.io/chrome-web-store/users/gpbcbbajoagdgnokieocaplbhkiidmmb.svg)  
+
 # chrome Anki Quick Adder
 
 > This chrome extension provides the ability to create Anki cards directly from Google Chrome on your Anki Desktop.
