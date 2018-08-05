@@ -394,8 +394,6 @@ function loadAutoCompleteTags(context,field,data)
         }
 
     }
-    console.log(availableTags);
-
 
     function split(val) {
 
@@ -827,7 +825,7 @@ function savedNotesLoad() {
         var newModeList = $("#dialogModelList").val();
         var newTag = $("#dialogTags").val().replace(/;/g,",");
         var allHiddenFields = {};
-        var saveNewNote = {};
+        var saveNewNote;
         if (newModeList === null || newDeckList === null) {
 
             notifyDialog("Model name or deck name is empty.<br> 1. Please run Anki <br>2. Go to Add card tab and click on refresh icon");
@@ -876,7 +874,7 @@ function savedNotesLoad() {
             }
         };
 
-        var noteWithLastError = {};
+        let noteWithLastError = {};
         noteWithLastError = saveNewNote;
         noteWithLastError.lasterror = "";
 
@@ -1449,7 +1447,7 @@ function rebindAllKeys(contextType = "AddCard") {
 
 
         if (contextType == "AddCard") {
-            submitToAnki();
+            submitToAnki("dialog");
         } else if (contextType == "dialogCard") {
             $('#submitDialog').trigger('submit');
         }
@@ -1556,8 +1554,7 @@ function saveSettings(item, value = false) {
 
 function cleanedDeckName(value) {
     let lengthParent, spaceLength, last, newDeckName;
-    value = value + "";
-
+    value = value+"";
     if (value.indexOf("::") !== -1) {
         lengthParent = value.substring(0, value.lastIndexOf("::") + 2).length;
         spaceLength = lengthParent - 10 > 3 ? lengthParent - 10 : "5";
@@ -2695,13 +2692,18 @@ function sendNotesAnki() {
 
 
 function sendEachNoteAnki(item) {
-
     //get note params
+    var retrievedNoteVal = JSON.parse(item).note;
+      //see if tags are already an arrray
 
-    var params = {
-        "note": JSON.parse(item).note
+    if(retrievedNoteVal["tags"].length===1)
+    {
+        retrievedNoteVal["tags"] = getTagsArray(retrievedNoteVal["tags"][0]);
+    }
+
+    let params = {
+        "note":retrievedNoteVal
     };
-
     background.ankiConnectRequest("addNote", 6, params)
         .then(function(fulfilled) {
             if (removeFromArray(allSavedNotes, item)) {
@@ -2833,16 +2835,26 @@ function sendEachNoteAnki(item) {
 
 
 
-function submitToAnki() {
+function submitToAnki(type="default") {
 
     let params=null;
     //Getting Field types
-    currentTags = $('#tags').val();
+    let currentTags = [];
+    let tagsStr;
 
-    if (isValidValue(currentTags)) {
-        currentTags = currentTags.replace(/;/g, ",");
-    } else {
-        currentTags = "";
+    if(type==="dialog")
+    {
+         tagsStr = $('#dialogTags').val();
+
+    }
+    else {
+         tagsStr = $('#tags').val();
+
+    }
+
+    if (isValidValue(tagsStr)) {
+        tagsStr = tagsStr.replace(/;/g, ",");
+        currentTags = getTagsArray(tagsStr);
 
     }
 
@@ -2885,10 +2897,9 @@ function submitToAnki() {
             "deckName": currentDeck,
             "modelName": currentNoteType,
             "fields": arrayToSend,
-            "tags": [currentTags]
+            "tags": currentTags
         }
     };
-
     if (counter === 0) {
 
         if (connectionStatus === false) {
@@ -2924,6 +2935,20 @@ function submitToAnki() {
             .catch(function(error) {
                 catchAnkiSubmitErrors(error, params);
             });
+    }
+
+}
+
+
+function getTagsArray(tagsString)
+{
+
+    if(typeof tagsString==="string")
+    {
+         tagsString = tagsString.replace(/\,+\s+$|\,+$/,'');
+
+        return tagsString.split(",");
+
     }
 
 }

@@ -520,7 +520,7 @@ function isValidValue(value) {
 
 function submitToAnki() {
     // saveChanges("savedFormFields", savedFormFields, "local");
-    let params;
+    let params = null;
     if (isValidValue(currentFields)) {
         currentTags = "";
         var counter = 0;
