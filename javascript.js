@@ -768,7 +768,10 @@ function savedNotesLoad() {
             selectEditDialogOptions(editNote.deckName, "#dialogDeckList");
             selectEditDialogOptions(editNote.modelName, "#dialogModelList");
             createDialogFields(editNote.allHiddenFields, "Edit");
-            $('#dialogTags').val(editNote.tags);
+            let unfilteredTags = editNote.tags;
+            let filteredTags = unfilteredTags.toString().replace(/\,/g,";");
+
+            $('#dialogTags').val(filteredTags);
 
         } else if (dialogType === "Add") {
 
@@ -822,7 +825,7 @@ function savedNotesLoad() {
         var tempFirstField;
         var newDeckList = $("#dialogDeckList").val();
         var newModeList = $("#dialogModelList").val();
-        var newTag = $("#dialogTags").val();
+        var newTag = $("#dialogTags").val().replace(/;/g,",");
         var allHiddenFields = {};
         var saveNewNote = {};
         if (newModeList === null || newDeckList === null) {
@@ -1553,6 +1556,8 @@ function saveSettings(item, value = false) {
 
 function cleanedDeckName(value) {
     let lengthParent, spaceLength, last, newDeckName;
+    value = value + "";
+
     if (value.indexOf("::") !== -1) {
         lengthParent = value.substring(0, value.lastIndexOf("::") + 2).length;
         spaceLength = lengthParent - 10 > 3 ? lengthParent - 10 : "5";
@@ -2961,7 +2966,14 @@ function catchAnkiSubmitErrors(error, params) {
 
         }
 
-    } else {
+    }
+    else if (background.findRegex("fasst", currentError)) {
+
+
+        background.notifyUser("Error: " + error, "notifyalert");
+        errorLogs.innerHTML = "<span style=\"color:red\";>No, connection. Please, run Anki to Add card</span>";
+    }
+    else {
 
         background.notifyUser("Error: " + error, "notifyalert");
         errorLogs.innerHTML = "<span style=\"color:red\";>No, connection. Please, run Anki to Add card</span>";
