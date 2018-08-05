@@ -257,49 +257,8 @@ var getTags = function() {
 
     background.ankiConnectRequest('getTags', 6)
         .then(function(fulfilled) {
-            availableTags = fulfilled;
-            //debugLog(availableTags);
 
-
-            function split(val) {
-                return val.split(/;\s*/);
-            }
-
-            function extractLast(term) {
-                return split(term).pop();
-            }
-
-            $("#tags")
-            // don't navigate away from the field on tab when selecting an item
-                .on("keydown", function(event) {
-                    if (event.keyCode === $.ui.keyCode.TAB &&
-                        $(this).autocomplete("instance").menu.active) {
-                        event.preventDefault();
-                    }
-                })
-                .autocomplete({
-                    minLength: 0,
-                    source: function(request, response) {
-                        // delegate back to autocomplete, but extract the last term
-                        response($.ui.autocomplete.filter(
-                            fulfilled, extractLast(request.term)));
-                    },
-                    focus: function() {
-                        // prevent value inserted on focus
-                        return false;
-                    },
-                    select: function(event, ui) {
-                        var terms = split(this.value);
-                        // remove the current input
-                        terms.pop();
-                        // add the selected item
-                        terms.push(ui.item.value);
-                        // add placeholder to get the comma-and-space at the end
-                        terms.push("");
-                        this.value = terms.join("; ");
-                        return false;
-                    }
-                });
+        loadAutoCompleteTags("main","#tags",fulfilled);
 
         })
         .catch(function(error) {
@@ -409,7 +368,76 @@ function init() {
 
 
 }
+function loadAutoCompleteTags(context,field,data)
+{
 
+    //sanitize Tags
+
+    availableTags=[];
+    for(let i=0;i<data.length;i++)
+    {
+        let filterTag = data[i].replace(/\,+\s+$|\,+$/,'');
+        let filterTagArr = filterTag.split(",");
+        if(filterTagArr.length>0)
+        {
+            for (let j = 0; j < filterTagArr.length; j++) {
+                    if(availableTags.indexOf(filterTagArr[j])==-1)
+                    {
+                        availableTags.push(filterTagArr[j]);
+                    }
+            }
+        }
+        else
+        {
+            availableTags.push(filterTag);
+
+        }
+
+    }
+    console.log(availableTags);
+
+
+    function split(val) {
+
+        return val.split(/;\s*/);
+    }
+
+    function extractLast(term) {
+        return split(term).pop();
+    }
+
+    $(field)
+    // don't navigate away from the field on tab when selecting an item
+        .on("keydown", function(event) {
+            if (event.keyCode === $.ui.keyCode.TAB &&
+                $(this).autocomplete("instance").menu.active) {
+                event.preventDefault();
+            }
+        })
+        .autocomplete({
+            minLength: 0,
+            source: function(request, response) {
+                // delegate back to autocomplete, but extract the last term
+                response($.ui.autocomplete.filter(
+                    availableTags, extractLast(request.term)));
+            },
+            focus: function() {
+                // prevent value inserted on focus
+                return false;
+            },
+            select: function(event, ui) {
+                var terms = split(this.value);
+                // remove the current input
+                terms.pop();
+                // add the selected item
+                terms.push(ui.item.value);
+                // add placeholder to get the comma-and-space at the end
+                terms.push("");
+                this.value = terms.join("; ");
+                return false;
+            }
+        });
+}
 function validateSettings() {
     if (!isValidValue(allSettings)) {
         allSettings = {};
@@ -516,7 +544,7 @@ function createDialogFields(localFields, noteType) {
         }
 
     }
-    //retreive Tags
+    //clear Tags
 
     createDynamicFields();
 
@@ -756,10 +784,7 @@ function savedNotesLoad() {
 
             }
             selectEditDialogOptions(localNoteType, "#dialogModelList");
-
-
-
-            for (let key in storedFieldsForModels[localNoteType])
+              for (let key in storedFieldsForModels[localNoteType])
 
             {
                 let fieldValue;
@@ -773,8 +798,12 @@ function savedNotesLoad() {
 
 
             createDialogFields(allFieldsRetreived, "Add");
+        //    clear oldTags
+            $('#dialogTags').val('');
 
         }
+        //    load autocomplete for editCard and addCard
+        loadAutoCompleteTags("main","#dialogTags",availableTags);
 
         formSubmitHandler = function() {
 

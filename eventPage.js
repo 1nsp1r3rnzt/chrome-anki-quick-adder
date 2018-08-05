@@ -206,11 +206,14 @@ function ankiConnectRequest(action, version, params = {}) {
 
 
                             if (response.result) {
-                                resolve(response.result);
                                 if (action !== "addNote" && action !== "sync" && action !== "version") {
+
                                     saveChanges(action + "Saved", response.result);
 
                                 }
+
+                                resolve(response.result);
+
 
                             } else {
                                 throw response.error;
