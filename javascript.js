@@ -121,7 +121,9 @@ var deckNames = function() {
             saveChanges("connectionStatus", false);
             let syncSettingsNotice;
             let conRefusedError;
-            if (allSettings.syncFrequency !== "Manual" && isValidValue(allSettings.syncFrequency)) {
+            let  syncMode = allSettings.syncFrequency;
+            if (syncMode !== "Manual") {
+
                 if (isValidValue(modelNamesSaved) && isValidValue(deckNamesSaved)) {
                     conRefusedError = "<p>Connection Refused</p>" +
                         "This extension needs Anki to sync fields in Live Mode.</a>";
@@ -132,7 +134,7 @@ var deckNames = function() {
 
                 } else {
 
-                    conRefusedError = "<p>Connection Refused and no cached data.</p>1. This extension needs <a href='https://apps.ankiweb.net' target='_blank'>Anki.</a> <br>2. Also, please install <a href='https://ankiweb.net/shared/info/2055492159' target='_blank'> Anki connect plugin (V6).</a> (if not installed).<br><br><a href='https://codehealthy.com/chrome-anki-quick-adder/#getting-started' target='_blank'>Read documentation</a><br>";
+                    conRefusedError = "<p>Connection Refused and no cached data.</p>1. This extension needs <a href='https://apps.ankiweb.net' target='_blank'>Anki.</a> <br>2. Also, please install <a href='https://ankiweb.net/shared/info/2055492159' target='_blank'> Anki connect plugin (V6).</a> (if not installed).<br><br><a href='https://codehealthy.com/chrome-anki-quick-adder/#getting-started' target='_blank'>Read documentation</a><br><input type='button' id='reloadExtension' value='Reload'>";
 
 
                 }
@@ -140,8 +142,19 @@ var deckNames = function() {
 
 
             } else {
-                conRefusedError = "<p>Connection Refused and no cached data.</p>1. This extension needs <a href='https://apps.ankiweb.net' target='_blank'>Anki.</a> <br>2. Also, please install <a href='https://ankiweb.net/shared/info/2055492159' target='_blank'> Anki connect plugin (V6).</a> (if not installed).<br><br><a href='https://codehealthy.com/chrome-anki-quick-adder/#getting-started' target='_blank'>Read documentation</a><br>";
-                syncSettingsNotice = '';
+
+                //handle case when data is already saved..
+                if (isValidValue(modelNamesSaved) && isValidValue(deckNamesSaved)) {
+                  init();
+                }
+
+                else
+
+                {
+                    conRefusedError = "<p>Connection Refused and no cached data.</p>1. This extension needs <a href='https://apps.ankiweb.net' target='_blank'>Anki.</a> <br>2. Also, please install <a href='https://ankiweb.net/shared/info/2055492159' target='_blank'> Anki connect plugin (V6).</a> (if not installed).<br><br><a href='https://codehealthy.com/chrome-anki-quick-adder/#getting-started' target='_blank'>Read documentation</a><br>";
+                    syncSettingsNotice = "";
+                }
+
             }
 
 
@@ -1066,6 +1079,7 @@ function createDynamicFields() {
         name: "colorPicker",
         action: "applyForeColor",
         aria: "color picker",
+
         contentDefault: "<span class='editor-color-picker'>Text Color<span>",
 
         init: function() {
