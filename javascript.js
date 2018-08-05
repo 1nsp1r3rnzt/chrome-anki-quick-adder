@@ -376,24 +376,29 @@ function loadAutoCompleteTags(context,field,data)
     availableTags=[];
     for(let i=0;i<data.length;i++)
     {
-        let filterTag = data[i].replace(/\,+\s+$|\,+$/,'');
+        let filterTag = data[i].replace(/\,+\s+$|\,+$/,'').trim();
         let filterTagArr = filterTag.split(",");
         if(filterTagArr.length>0)
         {
             for (let j = 0; j < filterTagArr.length; j++) {
-                    if(availableTags.indexOf(filterTagArr[j])==-1)
+                let multipleTag = filterTagArr[j].trim();
+                    if(availableTags.indexOf(multipleTag)===-1)
                     {
-                        availableTags.push(filterTagArr[j]);
+                        availableTags.push(multipleTag);
                     }
             }
         }
         else
         {
-            availableTags.push(filterTag);
 
+            if(availableTags.indexOf(filterTag)===-1) {
+                availableTags.push(filterTag);
+            }
         }
 
     }
+
+    console.log(availableTags);
 
     function split(val) {
 
