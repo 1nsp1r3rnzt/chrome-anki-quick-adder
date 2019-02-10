@@ -1186,6 +1186,7 @@ function createDynamicFields() {
             'underline',
             'pre',
             'removeFormat'
+            ,"anchor"
         ];
         favourites.buttons = allButtons;
         saveChanges("favourites", favourites);
@@ -2980,6 +2981,7 @@ function catchAnkiSubmitErrors(error, params) {
 
         if (background.findRegex("duplicate", currentError)) {
             errorLogs.innerHTML = "<span style=\"color:red\";>Duplicate Card. Please edit any field</span>";
+
         }
         else {
             errorLogs.innerHTML = "<span style=\"color:red\";>No, connection. Please, run Anki to Add card</span>";

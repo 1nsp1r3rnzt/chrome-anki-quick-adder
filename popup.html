@@ -61,7 +61,7 @@
                 <select id="deckList"></select>
             </div>
             <p>Note Type:
-                <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshModel">
+                <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshModel" title="update deck list from Anki">
                     <img src="images/refresh.png" alt="icon" title="update model list from Anki">
                 </button>
             </p>
@@ -86,6 +86,10 @@
                     <img src="images/nightmode.png" alt="icon"
                          title="Changes to dark theme temporary to see colored text clearly">
                 </button>
+                <button type="button" class="info-image" style="background-color:white;border:none;" id="resetButton">
+                    <img src="images/delete.png" alt="icon"
+                         title="Clear all the fields(even sticky)">
+                </button>
             </h2>
 
 
@@ -104,8 +108,7 @@
                 <br>
                 <input id="tags" size="45">
                 <br>
-                <input type="submit" value="Add Note">
-                <input type="button" id="resetButton" value="Reset">
+                <input type="submit" value="Add Note" id="submitNoteButton">
             </form>
 
         </div>
