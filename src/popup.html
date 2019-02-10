@@ -4,31 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Anki Adder Chrome Extension</title>
-    <script src="lib/common/js/jquery-3.3.1.min.js"></script>
+    <script src="../lib/common/js/jquery-3.3.1.min.js"></script>
+    <script src="../lib/common/js/jquery-ui.min.js"></script>
+    <script src="../lib/medium-editor/js/medium-editor.js"></script>
+    <script src='../lib/spectrum/spectrum.js'></script>
+    <script src='../lib/common/js/jquery.validate.min.js'></script>
+    <link rel='stylesheet' href='../lib/spectrum/spectrum.css'/>
+    <link rel="stylesheet" href="../lib/common/css/jquery-ui.css" class="rel">
+    <link rel="stylesheet" href="../lib/medium-editor/css/medium-editor.css">
 
-    <script src="lib/common/js/jquery-ui.min.js"></script>
-    <script src="lib/medium-editor/js/medium-editor.js"></script>
-    <script src='lib/spectrum/spectrum.js'></script>
-    <script src='lib/common/js/jquery.validate.min.js'></script>
-    <link rel='stylesheet' href='lib/spectrum/spectrum.css'/>
-    <link rel="stylesheet" href="lib/common/css/jquery-ui.css" class="rel">
-    <link rel="stylesheet" href="lib/medium-editor/css/medium-editor.css">
+    <script src="../lib/common/js/jsgrid.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="../lib/common/css/jsgrid.min.css"/>
+    <link type="text/css" rel="stylesheet" href="../lib/common/css/jsgrid-theme.min.css"/>
 
-    <script src="lib/common/js/jsgrid.min.js"></script>
-    <link type="text/css" rel="stylesheet" href="lib/common/css/jsgrid.min.css"/>
-    <link type="text/css" rel="stylesheet" href="lib/common/css/jsgrid-theme.min.css"/>
-
-    <script src="lib/mousetrap/mousetrap.min.js"></script>
-    <script src="lib/mousetrap/mousetrap-record.min.js"></script>
+    <script src="../lib/mousetrap/mousetrap.min.js"></script>
+    <script src="../lib/mousetrap/mousetrap-record.min.js"></script>
     <!-- Core -->
-    <link rel="stylesheet" href="lib/medium-editor/css/themes/default.css">
+    <link rel="stylesheet" href="../lib/medium-editor/css/themes/default.css">
     <!-- or any other theme -->
-    <link href="lib/select2/select2.min.css" rel="stylesheet"/>
-    <script src="lib/select2/select2.min.js"></script>
-    <script src="lib/common/js/notify.min.js"></script>
-    <script src="javascript.js"></script>
+    <link href="../lib/select2/select2.min.css" rel="stylesheet"/>
+    <script src="../lib/select2/select2.min.js"></script>
+    <script src="../lib/common/js/notify.min.js"></script>
+    <script src="js/foreground/javascript.js" type="module"></script>
 
-    <link rel="stylesheet" href="src/css/style.css" class="rel">
+    <link rel="stylesheet" href="/src/css/style.css" class="rel">
 
 
 </head>
@@ -52,7 +51,7 @@
 
             <p> Current Deck:
                 <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshDecks">
-                    <img src="images/refresh.png" alt="icon">
+                    <img src="../images/refresh.png" alt="icon" title="update decks list from Anki">
                 </button>
             </p>
 
@@ -62,7 +61,7 @@
             </div>
             <p>Note Type:
                 <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshModel">
-                    <img src="images/refresh.png" alt="icon" title="update model list from Anki">
+                    <img src="../images/refresh.png" alt="icon" title="update model list from Anki">
                 </button>
             </p>
 
@@ -75,15 +74,15 @@
 
                 <button type="button" class="info-image" style="background-color:white;border:none;"
                         id="stickyFieldsToggle">
-                    <img src="images/stickyFields.png" alt="icon"
+                    <img src="../images/stickyFields.png" alt="icon"
                          title="Toggle global Sticky fields settings. Turning off globally is useful when you add cards from chrome menu so it won't append data unintentionally.">
                 </button>
                 <button type="button" class="info-image" style="background-color:white;border:none;"
                         id="saveNotesToggle">
-                    <img src="images/localMode.png" alt="icon" title="Toggle save Note settings.">
+                    <img src="../images/localMode.png" alt="icon" title="Toggle save Note settings.">
                 </button>
                 <button type="button" class="info-image" style="background-color:white;border:none;" id="nightMode">
-                    <img src="images/nightmode.png" alt="icon"
+                    <img src="../images/nightmode.png" alt="icon"
                          title="Changes to dark theme temporary to see colored text clearly">
                 </button>
             </h2>
@@ -99,12 +98,13 @@
                 </div>
                 <label for="tags">Tags: </label>
                 <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshTags">
-                    <img src="images/refresh.png" alt="icon">
+                    <img src="../images/refresh.png" alt="icon">
                 </button>
                 <br>
                 <input id="tags" size="45">
                 <br>
-                <input type="submit" value="Add Note">
+
+                <input type="submit" id="btnAddNote" value="Add Note">
                 <input type="button" id="resetButton" value="Reset">
             </form>
 
@@ -197,29 +197,28 @@
         <br> <select class="multipleSelect2" id="FavouriteButtons" multiple>
         <option value="colorPicker">colorPicker</option>
         <option value="bold">bold</option>
-        <option value="italic">Italic</option>
-        <option value="removeFormat">Remove Formatting</option>
-        <option value="anchor">Add Link(#)</option>
+        <option value="italic">italic</option>
+        <option value="removeFormat">removeFormat</option>
         <option value="pre">Code</option>
-        <option value="underline">Underline</option>
-        <option value="strikethrough">Strikethrough</option>
-        <option value="subscript">Subssript</option>
-        <option value="superscript">Superscript</option>
-        <option value="quote">Quote</option>
-        <option value="orderedlist">Orderedlist</option>
-        <option value="unorderedlist">Unordered list</option>
-        <option value="indent">Indent</option>
-        <option value="outdent">Outdent</option>
-        <option value="justifyLeft">Justify Left</option>
-        <option value="justifyCenter">Justify Center</option>
-        <option value="justifyRight">Justify Right</option>
-        <option value="justifyFull">Justify Full</option>
-        <option value="h1">Heading 1</option>
-        <option value="h2">Heading 2</option>
-        <option value="h3">Heading 3</option>
-        <option value="h4">Heading 4</option>
-        <option value="h5">Heading 5</option>
-        <option value="h6">Heading 6</option>
+        <option value="underline">underline</option>
+        <option value="strikethrough">strikethrough</option>
+        <option value="subscript">subscript</option>
+        <option value="superscript">superscript</option>
+        <option value="quote">quote</option>
+        <option value="orderedlist">orderedlist</option>
+        <option value="unorderedlist">unorderedlist</option>
+        <option value="indent">indent</option>
+        <option value="outdent">outdent</option>
+        <option value="justifyLeft">justifyLeft</option>
+        <option value="justifyCenter">justifyCenter</option>
+        <option value="justifyRight">justifyRight</option>
+        <option value="justifyFull">justifyFull</option>
+        <option value="h1">h1</option>
+        <option value="h2">h2</option>
+        <option value="h3">h3</option>
+        <option value="h4">h4</option>
+        <option value="h5">h5</option>
+        <option value="h6">h6</option>
 
 
     </select>
@@ -230,7 +229,7 @@
         <table style="width:100%">
 
             <tr>
-                <td>Sync Fields: <img src="images/info.png" class="info-image" alt="icon"
+                <td>Sync Fields: <img src="../images/info.png" class="info-image" alt="icon"
                                       title="Manual: CLick refresh icons while Anki is running to get latest fields.<Live: Auto update Decks List from Anki everytime"/>
                 </td>
                 <td>
@@ -244,7 +243,7 @@
             </tr>
             <tr>
                 <td>save Notes: LocalStorage
-                    <img src="images/info.png" class="info-image" alt="icon"
+                    <img src="../images/info.png" class="info-image" alt="icon"
                          title="save notes in extension if Anki is not connected.<br> Save locally mode saves notes directly in the extension without trying to connect to Anki(fast for computer where anki is not installed)">
                 </td>
                 <td>
@@ -258,7 +257,7 @@
 
             </tr>
             <tr>
-                <td>Frozen Fields:<img src="images/info.png" class="info-image" alt="icon"
+                <td>Frozen Fields:<img src="../images/info.png" class="info-image" alt="icon"
                                        title="Frozen fields are sticky fields that stay after a adding note. Turn on setting and Click [S] icon in the Add card tab for each field. ">
                 </td>
                 <td>
@@ -275,7 +274,7 @@
             <tr>
                 <td>Remove duplicate Notes from Local Storage:
 
-                    <img src="images/info.png" class="info-image" alt="icon"
+                    <img src="../images/info.png" class="info-image" alt="icon"
                          title="When saved notes are submitted, duplicate notes are deleted from local storage automatically. Turning it off leaves them in the list for you to edit  ">
 
                 </td>
@@ -291,7 +290,7 @@
             <tr>
                 <td>
                     Decks in chrome menu:
-                    <img src="images/info.png" class="info-image" alt="icon"
+                    <img src="../images/info.png" class="info-image" alt="icon"
                          title="Show favourite decks in chrome menu instead of all decks">
 
 
@@ -308,7 +307,7 @@
             <tr>
                 <td>
                     Models in chrome menu:
-                    <img src="images/info.png" class="info-image" alt="icon"
+                    <img src="../images/info.png" class="info-image" alt="icon"
                          title="Show favourite models in chrome menu instead of all models">
 
 
@@ -325,7 +324,7 @@
             <tr>
                 <td>
                     paste Plain text:
-                    <img src="images/info.png" class="info-image" alt="icon"
+                    <img src="../images/info.png" class="info-image" alt="icon"
                          title="filters data pasted to allow plain html">
 
 
@@ -342,7 +341,7 @@
             <tr>
                 <td>
                     Clean pasted Html
-                    <div id="info-text"><img src="images/info.png" class="info-image" alt="icon"
+                    <div id="info-text"><img src="../images/info.png" class="info-image" alt="icon"
                                              title="clears classes from pasted html when turned on">
                     </div>
 
@@ -359,7 +358,7 @@
             <tr>
                 <td>
                     <p>Append data to fields:
-                        <img src="images/info.png" class="info-image" alt="icon"
+                        <img src="../images/info.png" class="info-image" alt="icon"
                              title="When turned on, When you press shortcut to add data or send data from chrome menu, selected data on any page is appended to already existing data. When turned off, the fields are cleared every time before sending data ">
 
                     </p>
@@ -375,7 +374,7 @@
             </tr>
             <tr>
                 <td>Rebuild Chrome Menu
-                    <img src="images/info.png" class="info-image" alt="icon"
+                    <img src="../images/info.png" class="info-image" alt="icon"
                          title="If you don't see chrome menu, then recover using this option. It will try to recreate the menu ">
 
                 </td>
@@ -385,7 +384,7 @@
             <tr>
                 <td>
                     <p>Debug Mode:
-                        <img src="images/info.png" class="info-image" alt="icon"
+                        <img src="../images/info.png" class="info-image" alt="icon"
                              title=": Turn console debug on or off to help debugging.">
 
 
@@ -396,7 +395,7 @@
             </tr>
             <tr>
                 <td>Sync Anki Desktop to AnkiWeb
-                    <img src="images/info.png" class="info-image" alt="icon"
+                    <img src="../images/info.png" class="info-image" alt="icon"
                          title="Clicking it will open AnkiDesktop and press Sync.">
 
                 </td>
@@ -405,7 +404,7 @@
             </tr>
             <tr>
                 <td>Clear all Settings & Restore defaults
-                    <img src="images/info.png" class="info-image" alt="icon"
+                    <img src="../images/info.png" class="info-image" alt="icon"
                          title="Warning, All settings will deleted and default settings will be restored.">
                 </td>
                 <td><input type="button" style="background: #000;" id="clearAllDefaults" value="Restore Defaults"></td>
