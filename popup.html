@@ -52,7 +52,7 @@
 
             <p> Current Deck:
                 <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshDecks">
-                    <img src="images/refresh.png" alt="icon">
+                    <img src="images/refresh.png" alt="icon" title="Sync Deck list from Anki">
                 </button>
             </p>
 
@@ -102,11 +102,16 @@
                                                                             id="Default-Back-Field"></textarea><br>
                 </div>
                 <label for="tags">Tags: </label>
-                <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshTags">
-                    <img src="images/refresh.png" alt="icon">
+                <button type="button" class="stickyButton" id="stickyTagsButton">
+                    <img src="images/sOff.png" alt="icon">
                 </button>
+                <button type="button" style="background-color:white;border:none;" class="refreshData" id="refreshTags">
+                    <img src="images/refresh.png" alt="icon" title="update tags list from Anki">
+                </button>
+
                 <br>
                 <input id="tags" size="45">
+
                 <br>
                 <input type="submit" value="Add Note" id="submitNoteButton">
             </form>
@@ -164,13 +169,15 @@
 
                     <div id="dialogAddCard">
                     </div>
-                    <label for="tags">Tags: </label>
+                    <label for="tags">Tags:</label>
+
                     <input id="dialogTags" size="45">
                     <br>
 
                     <input type="button" id="dialogResetButton" value="Reset">
 
                     <input type="submit" id="submitDialog" value="Save Note">
+
                 </form>
 
             </div>
@@ -461,6 +468,10 @@
             <tr>
                 <td> Shortcut for New Paragraph:</td>
                 <td>Press <span style="background: #a4c7ff;">Enter</span> in any Field</td>
+            </tr>
+            <tr>
+                <td> Open as a popup:</td>
+                <td>Right Click extension icon <span style="background: #a4c7ff;">Click options</span></td>
             </tr>
         </table>
 

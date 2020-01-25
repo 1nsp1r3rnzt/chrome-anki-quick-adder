@@ -20,6 +20,7 @@ var editingCard = false;
 var currentDialogType;
 var stickyFields = {};
 var themeMode = "day";
+var stickyTags = '';
 var port = chrome.extension.connect({
     name: "ankiadder"
 });
@@ -42,7 +43,7 @@ chrome.runtime.onMessage.addListener(
         }
     });
 
-function restore_options() {
+function load_options() {
 
     getChanges("allSettings"); //default
     getChanges("connectionStatus");
@@ -57,12 +58,12 @@ function restore_options() {
     getChanges("getTagsSaved");
     getChanges("allSavedNotes");
     getChanges("stickyFields");
-
+    getChanges("stickyTags", "local")
 
 }
 
 //Restore User Settings on load of page
-document.addEventListener('DOMContentLoaded', restore_options);
+document.addEventListener('DOMContentLoaded', load_options);
 
 
 var deckNames = function () {
@@ -259,6 +260,7 @@ var getTags = function () {
         .catch(function (error) {
             // log error
             debugLog(error.message);
+
         });
 };
 
@@ -331,25 +333,104 @@ var cardFields = function (item, typeSync = "single") {
 
 };
 
+function delayKey(callback, ms) {
+    var timer = 0;
+    return function () {
+        var context = this, args = arguments;
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            callback.apply(context, args);
+        }, ms || 0);
+    };
+}
+
+function getButtonFor(tags, elementId, iconName, imageTitle) {
+    return ('<button type="button" ' +
+        'style="background-color:white;' +
+        'border:none;" ' +
+        'class="' + iconName +
+        '" id="' + elementId + '">\n' +
+        '<img src="images/' + iconName + '.png" alt="icon" title="' + imageTitle + '" ">\n' +
+        '  </button></p>\n')
+}
+
+function setSaveTagsListener() {
+
+    $('#tags').on("change paste", function () {
+        let tagsToSave = $('#tags').val();
+        saveChanges("stickyTags", tagsToSave, "local")
+
+    });
+
+
+    $('#tags').on("keyup", delayKey(function (e) {
+        let tagsToSave = $('#tags').val();
+        saveChanges("stickyTags", tagsToSave, "local")
+    }, 500));
+
+
+}
+
+function loadSavedTagsIntoTagsField() {
+    if (isValidValue(stickyTags) && stickyTags.length > 0) {
+        $('#tags').val(stickyTags);
+    }
+
+}
+
+function loadTagsIcon() {
+    let stickTagsButton = $('#stickyTagsButton img');
+    if (allSettings.stickyTags == false) {
+
+        stickTagsButton.attr('src', "images/sOff.png");
+        stickTagsButton.attr('title', "Turning on will prevent tags from being cleared on clicking add note.");
+    }
+    else {
+        stickTagsButton.attr('src', "images/sOn.png");
+        stickTagsButton.attr('title', "Turning OFF means tags will be cleared on clicking add note");
+
+    }
+
+
+    saveChanges("stickyTags", stickyTags, "local");
+}
+
+function toggleStickyTagsIcon() {
+    if (allSettings.stickyTags == true) {
+        allSettings.stickyTags = false;
+    }
+    else {
+        allSettings.stickyTags = true;
+    }
+    loadTagsIcon();
+}
+
+function setTagButtonToggleListener() {
+    $('#stickyTagsButton').on("click", function () {
+        toggleStickyTagsIcon();
+        saveSettings("stickyTags", allSettings.stickyTags)
+    });
+
+}
 
 function init() {
 
 
     chrome.runtime.getBackgroundPage(function (background) {
-        // Do stuff here that requires access to the background page.
-        // E.g. to access the function 'myFunction()'
         window.background = background;
 
         validateSettings();
         //grab deck names
         deckNames();
-        // Fields names are retreived inside modelNames()
+        // Fields names are retrieved inside modelNames()
         modelNames();
         //Tags for AutoComplete
         getTags();
-
+        loadTagsIcon();
+        loadSavedTagsIntoTagsField();
+        setSaveTagsListener();
         // select default sync hide and show
-
+        setTagButtonToggleListener();
         savedNotesLoad();
         notifyJsStyles();
     });
@@ -362,6 +443,7 @@ function loadAutoCompleteTags(context, field, data) {
     //sanitize Tags
 
     availableTags = [];
+
     for (let i = 0; i < data.length; i++) {
         let filterTag = data[i].replace(/\,+\s+$|\,+$/, '').trim();
         let filterTagArr = filterTag.split(",");
@@ -381,8 +463,6 @@ function loadAutoCompleteTags(context, field, data) {
         }
 
     }
-
-    console.log(availableTags);
 
     function split(val) {
 
@@ -421,10 +501,12 @@ function loadAutoCompleteTags(context, field, data) {
                 // add placeholder to get the comma-and-space at the end
                 terms.push("");
                 this.value = terms.join("; ");
+                $('#tags').trigger("change");
                 return false;
             }
         });
 }
+
 
 function validateSettings() {
     if (!isValidValue(allSettings)) {
@@ -478,6 +560,13 @@ function validateSettings() {
         allSettings.removeDuplicateNotes = true;
 
     }
+
+    if (!isValidValue(allSettings.stickyTags)) {
+
+        allSettings.stickyTags = true;
+
+    }
+
 
     saveChanges("allSettings", allSettings);
 
@@ -1075,15 +1164,14 @@ function runAfterElementExists(jquery_selector, callback) {
 }
 
 
-
 function createDynamicFields() {
     var currentTextSelection;
 
     /**
      * Gets the color of the current text selection
      */
-    function getCurrentTextColor(){
-        return  $(editor.getSelectedParentElement()).css('color');
+    function getCurrentTextColor() {
+        return $(editor.getSelectedParentElement()).css('color');
 
     }
 
@@ -1096,7 +1184,7 @@ function createDynamicFields() {
         aria: "color picker",
         contentDefault: "<span class='editor-color-picker'>Text Color<span>",
 
-        init: function() {
+        init: function () {
             this.button = this.document.createElement('button');
             this.button.classList.add('medium-editor-action');
             this.button.innerHTML = '<b>color</b>';
@@ -1147,10 +1235,10 @@ function createDynamicFields() {
             showInitial: true,
             hideAfterPaletteSelect: true,
             preferredFormat: "hex3",
-            change: function(color) {
+            change: function (color) {
                 setColor(color);
             },
-            hide: function(color) {
+            hide: function (color) {
                 setColor(color);
             },
             palette: [
@@ -1165,7 +1253,6 @@ function createDynamicFields() {
             ]
         });
     }
-
 
 
     if (typeof allSettings.forcePlainText != 'boolean') {
@@ -1186,7 +1273,7 @@ function createDynamicFields() {
             'underline',
             'pre',
             'removeFormat'
-            ,"anchor"
+            , "anchor"
         ];
         favourites.buttons = allButtons;
         saveChanges("favourites", favourites);
@@ -1453,7 +1540,8 @@ function rebindAllKeys(contextType = "AddCard") {
 
 
         if (contextType == "AddCard") {
-            submitToAnki("dialog");
+
+            submitToAnki("AddCard");
         } else if (contextType == "dialogCard") {
             $('#submitDialog').trigger('submit');
         }
@@ -2690,7 +2778,7 @@ function sendEachNoteAnki(item) {
     //see if tags are already an arrray
 
     if (retrievedNoteVal["tags"].length === 1) {
-        retrievedNoteVal["tags"] = getTagsArray(retrievedNoteVal["tags"][0]);
+        retrievedNoteVal["tags"] = background.getTagsArray(retrievedNoteVal["tags"][0]);
     }
 
     let params = {
@@ -2818,28 +2906,46 @@ function sendEachNoteAnki(item) {
 }
 
 
-function submitToAnki(type = "default") {
+function saveNewTags(currentTags) {
+    let newTagsFound = false;
+    currentTags.forEach(function (tagValue) {
+        let trimmedTagValue = tagValue.trim();
+        if (isValidValue(trimmedTagValue) && isValidValue(availableTags)) {
+            if (availableTags.indexOf(trimmedTagValue) === -1) {
+                availableTags.push(trimmedTagValue);
+                newTagsFound = true
 
+            }
+        }
+    });
+    if (newTagsFound == true) {
+        saveChanges("getTagsSaved", availableTags, "local")
+
+    }
+}
+
+function submitToAnki(type = "default") {
     let params = null;
     //Getting Field types
     let currentTags = [];
-    let tagsStr;
+    var tagsStr='';
 
     if (type === "dialog") {
         tagsStr = $('#dialogTags').val();
 
     }
     else {
-        tagsStr = $('#tags').val();
+        tagsStr = $('#tags').val().toString();
 
     }
+
+
 
     if (isValidValue(tagsStr)) {
         tagsStr = tagsStr.replace(/;/g, ",");
-        currentTags = getTagsArray(tagsStr);
-
+        currentTags = background.getTagsArray(tagsStr);
+        saveNewTags(currentTags)
     }
-
 
     //debugLog("currenttags" + currentTags);
     var counter = 0;
@@ -2848,9 +2954,9 @@ function submitToAnki(type = "default") {
     let lastFieldError = [];
 
     $("#addCard textarea").each(function () {
-        $
-        var textfieldValue = $(this).val();
-        var value = $(this).attr('id').replace(/-Field/gi, "");
+
+        let textfieldValue = $(this).val();
+        let value = $(this).attr('id').replace(/-Field/gi, "");
         sendValue = "";
         try {
             if (background.isTextFieldValid(textfieldValue)) {
@@ -2922,19 +3028,7 @@ function submitToAnki(type = "default") {
 }
 
 
-function getTagsArray(tagsString) {
-
-    if (typeof tagsString === "string") {
-        tagsString = tagsString.replace(/\,+\s+$|\,+$/, '');
-
-        return tagsString.split(",");
-
-    }
-
-}
-
 function catchAnkiSubmitErrors(error, params) {
-
     //notification for error
     var currentError = JSON.stringify(error);
     if (background.findRegex("Note is duplicate", currentError)) {
@@ -2983,8 +3077,13 @@ function catchAnkiSubmitErrors(error, params) {
             errorLogs.innerHTML = "<span style=\"color:red\";>Duplicate Card. Please edit any field</span>";
 
         }
+        else if (background.findRegex("collection is not available", currentError)) {
+            errorLogs.innerHTML = "<span style=\"color:red\";>Multiple profiles.Please select profile in Anki.</span>";
+
+        }
         else {
-            errorLogs.innerHTML = "<span style=\"color:red\";>No, connection. Please, run Anki to Add card</span>";
+
+            errorLogs.innerHTML = "<span style=\"color:red\";>" + error + "</span>";
         }
 
     }
@@ -3000,7 +3099,7 @@ function saveNotesLocally(value) {
         allSavedNotes.push(value);
 
         if (allSettings.saveNotes === "trueLocal") {
-            notifyUser("Note Saved successfully to locally saved notes list<br> without checking for Anki", "success", "html");
+            notifyUser("Note Added to saved Notes<br> ", "success", "html");
 
 
         } else {
@@ -3017,7 +3116,7 @@ function saveNotesLocally(value) {
 
 function clearTextBoxes(type = "single") {
 
-
+    errorLogs.innerHTML = "";
     if (type === "all") {
 
         savedFormFields = [];
@@ -3072,7 +3171,12 @@ function clearTextBoxes(type = "single") {
         saveChanges("savedFormFields", savedFormFields, "local");
 
     }
-    $('#tags').val('');
+
+    if (allSettings.stickyTags !== true) {
+        $('#tags').val('');
+        saveChanges("stickyTags", "", "local")
+    }
+
 
 }
 
