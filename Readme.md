@@ -25,10 +25,11 @@
 
 ## Installation
 
+
 - Please *start Anki* before running chrome or before installing chrome extension.
 1. Install [ankiConnect](https://ankiweb.net/shared/info/2055492159)
-- Please [see note for window](https://github.com/FooSoft/anki-connect#notes-for-windows-users) users to allow ankiConnect.
-- Mac users need to **[follow these instructions](https://github.com/FooSoft/anki-connect#notes-for-mac-os-x-users)** to allow communication.
+- Please [see note for windows users](https://git.foosoft.net/alex/anki-connect#notes-for-windows-users) to allow ankiConnect.
+- Mac users need to **[follow these instructions](https://git.foosoft.net/alex/anki-connect#notes-for-macos-users)** to allow communication.
 2. Restart Anki 
 3. install [extension from webstore](https://chrome.google.com/webstore/detail/anki-quick-adder/gpbcbbajoagdgnokieocaplbhkiidmmb)
 4. See known [bugs and issues](#known-bugs-and-solutions) in this readme to solve any bugs.
