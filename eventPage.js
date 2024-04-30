@@ -281,7 +281,7 @@ function createNotification(notificationTitle) {
     chrome.notifications.create(
         'ankiQuickAdder', {
             type: 'basic',
-            iconUrl: 'icon-64.png',
+            iconUrl: 'icon.png',
             title: manifestName + ' ' + manifestVersion,
             message: notificationTitle
         },

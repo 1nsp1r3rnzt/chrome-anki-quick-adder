@@ -3,8 +3,8 @@
   "version": "2.0.5",
   "short_name": "Anki Adder",
   "description": "This extension provides the ability to create anki cards directly from Google Chrome on your Anki Desktop.",
-  "background":{
-    "scripts": ["lib/common/js/jquery-3.3.1.min.js","eventPage.js"],
+  "background": {
+    "scripts": ["lib/common/js/jquery-3.3.1.min.js", "eventPage.js"],
     "persistent": false
   },
 
@@ -13,27 +13,23 @@
     "notifications",
     "contextMenus",
     "activeTab",
-   "http://localhost/"
+    "http://localhost/"
   ],
 
   "browser_action": {
-    "default_icon": "icon-64.png",
+    "default_icon": "icon.png",
     "default_popup": "popup.html"
   },
 
   "icons": {
-    "16": "icon-16.png",
-    "32": "icon-32.png",
-    "48": "icon-64.png",
-    "128": "icon-128.png"
+    "128": "icon.png"
   },
   "web_accessible_resources": [
-    "icon-64.png",
+    "icon.png",
     "src/importFile.js",
     "src/editCardModal.js",
     "src/editCardModel.css",
     "popup.html#tabs-2"
-
   ],
   "options_page": "popup.html#tabs-2",
   "commands": {
@@ -50,14 +46,16 @@
         "default": "Alt+Shift+2",
         "windows": "Alt+Shift+2",
         "mac": "Alt+Shift+2"
-      },"description": "Add select Text to second Field"
+      },
+      "description": "Add select Text to second Field"
     },
     "add-to-third-field": {
       "suggested_key": {
         "default": "Alt+Shift+3",
         "windows": "Alt+Shift+3",
         "mac": "Alt+Shift+3"
-      },"description": "Add select Text to third Field"
+      },
+      "description": "Add select Text to third Field"
     },
 
     "submit-data-to-popup": {
@@ -71,4 +69,4 @@
   },
 
   "manifest_version": 2
-  }
+}
