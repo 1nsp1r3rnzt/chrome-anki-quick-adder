@@ -1,7 +1,79 @@
+:root {
+    --container-width: 500px;
+}
+
+.material-symbols-outlined {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+}
+
 body {
-    font-family: Arial, Helvetica, sans-serif;
-    min-width: 400px;
-    min-height: 450px;
+    font-family: "Open Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-variation-settings:
+        "wdth" 100;
+    width: var(--container-width);
+}
+
+main {
+    padding: 8px !important;
+}
+
+ul#navbar {
+    padding: 4px !important;
+    margin: 0 !important;
+    border: none !important;
+}
+
+ul#navbar li {
+    border-radius: 4px !important;
+    margin: 0 6px 0 0 !important;
+}
+
+#tabs-1 {
+    padding: 0 !important;
+}
+
+.tools {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    margin: 10px 0;
+    float: right;
+}
+
+.tools button {
+    background-color: #e9e9e9;
+    height: 28px !important;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.choose-type-and-deck {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 250px;
+}
+
+.choose {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    margin-bottom: 10px;
+}
+
+#tabs-cards {
+    padding: 10px 0 !important;
+}
+
+.save-to-anki {
+    margin: 20px auto 0;
 }
 
 table {
@@ -41,10 +113,6 @@ table {
 
 }
 
-.info-image {
-    float: right;
-}
-
 input[type=button],
 input[type=submit],
 input[type=reset] {
@@ -67,12 +135,8 @@ input[type=reset] {
     border: none;
 }
 
-.shortcut {
-    background-color: #000;
-}
 
-input[type=submit],
-.greenButton {
+input[type=submit] {
     background-color: #4CAF50 !important;
 }
 
@@ -190,11 +254,6 @@ textarea {
     min-height: 32px;
 }
 
-.shortcut {
-    color: #003eff;
-    font-size: 14px;
-}
-
 .nightMode {
 
     background: #000;
@@ -203,10 +262,6 @@ textarea {
 
 .blueButton {
     background-color: #ff7405 !important;
-}
-
-#tags {
-    width: 100%;
 }
 
 #submitNoteButton {
