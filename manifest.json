@@ -1,26 +1,27 @@
 {
+  "manifest_version": 3,
   "name": "Anki Quick Adder",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "short_name": "Anki Adder",
   "description": "This extension provides the ability to create anki cards directly from Google Chrome on your Anki Desktop.",
-  "background":{
-    "scripts": ["lib/common/js/jquery-3.3.1.min.js","eventPage.js"],
-    "persistent": false
+  "background": {
+    "service_worker": "eventPage.js"
   },
-
   "permissions": [
     "storage",
     "notifications",
     "contextMenus",
     "activeTab",
-   "http://localhost/"
+    "scripting"
   ],
-
-  "browser_action": {
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "action": {
     "default_icon": "icon-64.png",
     "default_popup": "popup.html"
   },
-
   "icons": {
     "16": "icon-16.png",
     "32": "icon-32.png",
@@ -28,14 +29,20 @@
     "128": "icon-128.png"
   },
   "web_accessible_resources": [
-    "icon-64.png",
-    "src/importFile.js",
-    "src/editCardModal.js",
-    "src/editCardModel.css",
-    "popup.html#tabs-2"
-
+    {
+      "resources": [
+        "icon-64.png",
+        "src/importFile.js",
+        "src/editCardModal.js",
+        "src/editCardModel.css",
+        "popup.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
   ],
-  "options_page": "popup.html#tabs-2",
+  "options_page": "popup.html",
   "commands": {
     "add-to-first-field": {
       "suggested_key": {
@@ -44,22 +51,22 @@
       },
       "description": "Add select Text to first Field"
     },
-
     "add-to-second-field": {
       "suggested_key": {
         "default": "Alt+Shift+2",
         "windows": "Alt+Shift+2",
         "mac": "Alt+Shift+2"
-      },"description": "Add select Text to second Field"
+      },
+      "description": "Add select Text to second Field"
     },
     "add-to-third-field": {
       "suggested_key": {
         "default": "Alt+Shift+3",
         "windows": "Alt+Shift+3",
         "mac": "Alt+Shift+3"
-      },"description": "Add select Text to third Field"
+      },
+      "description": "Add select Text to third Field"
     },
-
     "submit-data-to-popup": {
       "suggested_key": {
         "default": "Alt+Shift+4",
@@ -68,7 +75,5 @@
       },
       "description": "Submit Data"
     }
-  },
-
-  "manifest_version": 2
   }
+}

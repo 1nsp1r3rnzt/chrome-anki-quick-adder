@@ -201,3 +201,8 @@ textarea {
 #submitNoteButton{
     float: right;
 }
+
+#form1 {
+    overflow: auto;
+    padding-bottom: 10px;
+}
