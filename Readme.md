@@ -52,7 +52,7 @@
 5. Right click and Click submit.
 6. A popup will open to submit your data for 2 seconds and will close.
 
-###  Add From Popup.
+### Add From Popup.
 ![enter image description here](https://raw.githubusercontent.com/1nsp1r3rnzt/chrome-anki-quick-adder/master/docs/images/ankiStep1.png)
 
 1.  Run Anki. The decklist is populated then only.
@@ -65,7 +65,7 @@
 8. You see a notification if card is entered successfully or not.
 
 ___
-## Known Bugs and Solutions 
+## Known Bugs and Solutions
 | Bug           | Solution      | Reason  |
 | ------------- |:-------------:| -----:|
 | chrome Menu disappears      | ![enter image description here](https://raw.githubusercontent.com/1nsp1r3rnzt/chrome-anki-quick-adder/master/docs/images/no-menu.png) 1. Start Anki <br> 2. Goto extension settings. <br> 3. Settings> Click Rebuild Menu  | 1. Anki is not running.<br>2. Chrome was opened before running Anki |
@@ -160,4 +160,4 @@ ___
 ## License
 
 - **[MIT license](/LICENSE)**
-- Copyright 2018 © <a href="http://codehealthy.com" target="_blank">Ranjit Singh</a>.
+- Copyright 2025 © <a href="http://ranjitsaini.net" target="_blank">Ranjit Singh</a>.

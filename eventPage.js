@@ -312,13 +312,13 @@ function restore_defaults() {
 
 function isUpdatedNow(openUrl = 0) {
     createContextMenu();
-    if (openUrl === 1) {
-        chrome.tabs.create({
-            url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"
-        }, function (tab) {
-            debugLog("update tab launched");
-        });
-    }
+    // if (openUrl === 1) {
+    //     chrome.tabs.create({
+    //         url: "https://codehealthy.com/chrome-anki-quick-adder/#latest-update"
+    //     }, function (tab) {
+    //         debugLog("update tab launched");
+    //     });
+    // }
 }
 
 function isInstalledNow() {
@@ -329,7 +329,7 @@ function isInstalledNow() {
     });
 
     chrome.tabs.create({
-        url: "https://codehealthy.com/chrome-anki-quick-adder/#getting-started"
+        url: "https://github.com/1nsp1r3rnzt/chrome-anki-quick-adder?tab=readme-ov-file#installation"
     }, function (tab) {
         debugLog("install tab launched");
     });

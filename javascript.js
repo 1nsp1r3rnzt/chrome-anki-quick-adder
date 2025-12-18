@@ -126,13 +126,13 @@ var deckNames = function () {
                     conRefusedError = "<p>Connection Refused</p>This extension needs Anki to sync fields in Live Mode.</a>";
                     syncSettingsNotice = "<br><br>  <span id='syncSettingSpan'>It is preferred to turn on <input type='button' id='syncSettingsButton' value='Turn on Cache'> to use cached fields and save notes locally.</span>";
                 } else {
-                    conRefusedError = "<p>Connection Refused and no cached data.</p>1. This extension needs <a href='https://apps.ankiweb.net' target='_blank'>Anki.</a> <br>2. Also, please install <a href='https://ankiweb.net/shared/info/2055492159' target='_blank'> Anki connect plugin (V6).</a> (if not installed).<br><br><a href='https://codehealthy.com/chrome-anki-quick-adder/#getting-started' target='_blank'>Read documentation</a><br><input type='button' id='reloadExtension' value='Reload'>";
+                    conRefusedError = "<p>Connection Refused and no cached data.</p>1. This extension needs <a href='https://apps.ankiweb.net' target='_blank'>Anki.</a> <br>2. Also, please install <a href='https://ankiweb.net/shared/info/2055492159' target='_blank'> Anki connect plugin (V6).</a> (if not installed).<br><br><a href='https://github.com/1nsp1r3rnzt/chrome-anki-quick-adder?tab=readme-ov-file#installation' target='_blank'>Read documentation</a><br><input type='button' id='reloadExtension' value='Reload'>";
                 }
             } else {
                 if (isValidValue(modelNamesSaved) && isValidValue(deckNamesSaved)) {
                     init();
                 } else {
-                    conRefusedError = "<p>Connection Refused and no cached data.</p>1. This extension needs <a href='https://apps.ankiweb.net' target='_blank'>Anki.</a> <br>2. Also, please install <a href='https://ankiweb.net/shared/info/2055492159' target='_blank'> Anki connect plugin (V6).</a> (if not installed).<br><br><a href='https://codehealthy.com/chrome-anki-quick-adder/#getting-started' target='_blank'>Read documentation</a><br>";
+                    conRefusedError = "<p>Connection Refused and no cached data.</p>1. This extension needs <a href='https://apps.ankiweb.net' target='_blank'>Anki.</a> <br>2. Also, please install <a href='https://ankiweb.net/shared/info/2055492159' target='_blank'> Anki connect plugin (V6).</a> (if not installed).<br><br><a href='https://github.com/1nsp1r3rnzt/chrome-anki-quick-adder?tab=readme-ov-file#installation' target='_blank'>Read documentation</a><br>";
                     syncSettingsNotice = "";
                 }
             }
