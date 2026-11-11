@@ -12,6 +12,7 @@ var currentTags;
 var connectionStatus;
 var modelNamesSaved;
 var storedFieldsForModels = storedFieldsForModels || {};
+importScripts("src/tts.js");
 var allSettings = {};
 var allSavedNotes = [];
 var stickyFields = {};
@@ -194,6 +195,11 @@ function ankiConnectRequest(action, version, params = {}) {
         if (((typeof globalCache[action + "Saved"] != "undefined") && (allSettings.syncFrequency === "Manual" || onceTimeForceSync === 0)) && ((action != "sync") || (action != "addNote"))) {
             resolve(globalCache[action + "Saved"]);
         } else {
+            if (action === "addNote") {
+                var tts = addTtsAudio(params, allSettings);
+                params = tts.params;
+                if (tts.skipped) notifyUser(tts.skipped, "notifyalert");
+            }
             fetch('http://127.0.0.1:8765', {
                 method: 'POST',
                 body: JSON.stringify({ action, version, params })
