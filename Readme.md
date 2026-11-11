@@ -65,6 +65,10 @@
 8. You see a notification if card is entered successfully or not.
 
 ___
+### Text-to-speech audio
+
+Settings → **Text-to-speech audio: true** adds a spoken version of one field to every new note (handy for language learning). Choose the language code (`en`, `fr`, `de`, `ja`…), which field is read (1st/2nd/3rd) and which field gets the `[sound:]` tag (default `Audio`; if the note type has no such field, it is appended to the field that is read). Anki downloads the audio through AnkiConnect's `audio` option, so the extension needs no extra permissions. The default voice service accepts up to 200 characters; for longer text or another voice, set **TTS URL** to any service that returns an audio file, using `{lang}` and `{text}` placeholders.
+
 ## Known Bugs and Solutions
 | Bug           | Solution      | Reason  |
 | ------------- |:-------------:| -----:|

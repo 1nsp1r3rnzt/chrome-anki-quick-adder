@@ -366,6 +366,10 @@ function validateSettings() {
     if (!isValidValue(allSettings.stickyFields)) { allSettings.stickyFields = true; }
     if (!isValidValue(allSettings.removeDuplicateNotes)) { allSettings.removeDuplicateNotes = true; }
     if (!isValidValue(allSettings.stickyTags)) { allSettings.stickyTags = true; }
+    if (!isValidValue(allSettings.ttsEnabled)) { allSettings.ttsEnabled = false; }
+    if (!isValidValue(allSettings.ttsLang)) { allSettings.ttsLang = "en"; }
+    if (!isValidValue(allSettings.ttsSourceField)) { allSettings.ttsSourceField = "1"; }
+    if (!isValidValue(allSettings.ttsTargetField)) { allSettings.ttsTargetField = "Audio"; }
     saveChanges("allSettings", allSettings);
 }
 
@@ -1690,6 +1694,11 @@ $(document).ready(function () {
         $('#saveNotes option[value=' + allSettings.saveNotes + ']').attr('selected', 'selected');
         $('#removeDuplicateNotes option[value=' + allSettings.removeDuplicateNotes + ']').attr('selected', 'selected');
         $('#stickyFields option[value=' + allSettings.stickyFields + ']').attr('selected', 'selected');
+        $('#ttsEnabled option[value=' + allSettings.ttsEnabled + ']').attr('selected', 'selected');
+        $('#ttsSourceField option[value=' + allSettings.ttsSourceField + ']').attr('selected', 'selected');
+        $('#ttsLang').val(allSettings.ttsLang || "");
+        $('#ttsTargetField').val(allSettings.ttsTargetField || "");
+        $('#ttsUrl').val(allSettings.ttsUrl || "");
         $('#appendFields option[value=' + allSettings.appendModeSettings + ']').attr('selected', 'selected');
         $('#showFavouriteDeck option[value=' + allSettings.favouriteDeckMenu + ']').attr('selected', 'selected');
         $('#showFavouriteModel option[value=' + allSettings.favouriteModelMenu + ']').attr('selected', 'selected');
@@ -1832,6 +1841,18 @@ $(document).ready(function () {
 
     });
 
+
+    $('#ttsEnabled').change(function () {
+        saveSettings("ttsEnabled", $(this).val());
+    });
+
+    $('#ttsSourceField').change(function () {
+        saveSettings("ttsSourceField", $(this).val());
+    });
+
+    $('#ttsLang, #ttsTargetField, #ttsUrl').change(function () {
+        saveSettings($(this).attr('id'), $(this).val().trim());
+    });
 
     $('#removeDuplicateNotes').change(function () {
         var value = $(this).val();

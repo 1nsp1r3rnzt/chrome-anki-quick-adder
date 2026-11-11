@@ -299,6 +299,49 @@
 
             </tr>
             <tr>
+                <td>Text-to-speech audio:
+                    <img src="images/info.png" class="info-image" alt="icon"
+                         title="Adds a spoken version of one field to each new note. Anki downloads the audio through AnkiConnect, so Anki needs internet access.">
+                </td>
+                <td>
+                    <div class="select-style"><select id="ttsEnabled">
+                        <option value="false">false</option>
+                        <option value="true">true</option>
+                    </select></div>
+                </td>
+            </tr>
+            <tr>
+                <td>TTS language:
+                    <img src="images/info.png" class="info-image" alt="icon"
+                         title="Language code of the text, e.g. en, fr, de, es, ja, zh-CN.">
+                </td>
+                <td><input type="text" id="ttsLang" placeholder="en" size="10"></td>
+            </tr>
+            <tr>
+                <td>TTS reads field:</td>
+                <td>
+                    <div class="select-style"><select id="ttsSourceField">
+                        <option value="1">1st field</option>
+                        <option value="2">2nd field</option>
+                        <option value="3">3rd field</option>
+                    </select></div>
+                </td>
+            </tr>
+            <tr>
+                <td>TTS audio goes in field:
+                    <img src="images/info.png" class="info-image" alt="icon"
+                         title="Field name for the [sound:] tag, e.g. Audio. If the note type has no such field, the audio is appended to the field that is read.">
+                </td>
+                <td><input type="text" id="ttsTargetField" placeholder="Audio" size="14"></td>
+            </tr>
+            <tr>
+                <td>TTS URL (optional):
+                    <img src="images/info.png" class="info-image" alt="icon"
+                         title="Leave empty for the default. Custom TTS services: use {lang} and {text} placeholders; the URL must return an audio file.">
+                </td>
+                <td><input type="text" id="ttsUrl" placeholder="default" size="24"></td>
+            </tr>
+            <tr>
                 <td>
                     Decks in chrome menu:
                     <img src="images/info.png" class="info-image" alt="icon"
