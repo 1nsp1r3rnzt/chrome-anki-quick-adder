@@ -65,6 +65,16 @@
 8. You see a notification if card is entered successfully or not.
 
 ___
+### Text-to-speech audio
+
+Settings → **Text-to-speech audio: true** adds a spoken version of one field to every new note (handy for language learning). Choose the language code (`en`, `fr`, `de`, `ja`…), which field is read (1st/2nd/3rd) and which field gets the `[sound:]` tag (default `Audio`; if the note type has no such field, it is appended to the field that is read). Anki downloads the audio through AnkiConnect (`storeMediaFile`) just before the note is added, so the extension needs no extra permissions.
+
+**Privacy:** with the default settings, the text of the field that is read is sent to **Google Translate's unofficial text-to-speech endpoint** (`translate.google.com/translate_tts`). It is not an official API: it can rate-limit or change without notice. To use another service, set **TTS URL** to any URL that returns an audio file, using `{lang}` and `{text}` placeholders. The default endpoint accepts up to 200 characters; longer text is added without audio.
+
+If the audio download fails (rate limit, offline, bad URL), the note is still added, without audio, and a separate notification says why. No error text is written into the note. This also applies when sending locally saved notes in bulk: many notes at once may hit the default endpoint's rate limit, and those notes are added without audio.
+
+Unit tests for the TTS helper (Node 18+, no dependencies): `node --test "test/*.test.js"`.
+
 ## Known Bugs and Solutions
 | Bug           | Solution      | Reason  |
 | ------------- |:-------------:| -----:|

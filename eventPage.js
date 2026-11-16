@@ -12,6 +12,7 @@ var currentTags;
 var connectionStatus;
 var modelNamesSaved;
 var storedFieldsForModels = storedFieldsForModels || {};
+importScripts("src/tts.js");
 var allSettings = {};
 var allSavedNotes = [];
 var stickyFields = {};
@@ -194,10 +195,12 @@ function ankiConnectRequest(action, version, params = {}) {
         if (((typeof globalCache[action + "Saved"] != "undefined") && (allSettings.syncFrequency === "Manual" || onceTimeForceSync === 0)) && ((action != "sync") || (action != "addNote"))) {
             resolve(globalCache[action + "Saved"]);
         } else {
-            fetch('http://127.0.0.1:8765', {
-                method: 'POST',
-                body: JSON.stringify({ action, version, params })
-            })
+            var ready = action === "addNote" ? withTtsAudio(params) : Promise.resolve(params);
+            ready
+                .then(readyParams => fetch('http://127.0.0.1:8765', {
+                    method: 'POST',
+                    body: JSON.stringify({ action, version, params: readyParams })
+                }))
                 .then(response => response.json())
                 .then(response => {
                     if (response.error) {
@@ -229,23 +232,43 @@ function ankiConnectRequest(action, version, params = {}) {
     });
 }
 
-function notifyUser(notifyContent, notificationType) {
+// Downloads TTS audio via AnkiConnect storeMediaFile before addNote (see src/tts.js).
+// Never rejects; on failure the note is added without audio and the user is told why.
+function withTtsAudio(params) {
+    return applyTtsAudio(params, allSettings, function (url, filename) {
+        return fetch('http://127.0.0.1:8765', {
+            method: 'POST',
+            body: JSON.stringify({ action: "storeMediaFile", version: 6, params: { filename: filename, url: url } })
+        })
+            .catch(e => { throw { ankiUnreachable: true, toString: () => String(e) }; })
+            .then(response => response.json())
+            .then(response => {
+                if (response.error) throw response.error;
+                return response.result;
+            });
+    }).then(function (tts) {
+        if (tts.warning) notifyUser(tts.warning, "notifyalert", TTS_NOTIFICATION_ID);
+        return tts.params;
+    });
+}
+
+function notifyUser(notifyContent, notificationType, notificationId) {
     var notifyString = JSON.stringify(notifyContent);
 
     if (notificationType === "notifyalert" || notificationType === "notifyAlert") {
         try {
-            createNotification(notifyString);
+            createNotification(notifyString, notificationId);
         } catch (err) {
             console.log(notifyString);
         }
     } else if (notificationType === "alert") {
         console.log(notifyString);
     } else if (notificationType === "notify") {
-        createNotification(notifyString);
+        createNotification(notifyString, notificationId);
     }
 }
 
-function createNotification(notificationTitle) {
+function createNotification(notificationTitle, notificationId) {
     var manifestName;
     var manifestVersion;
 
@@ -260,7 +283,7 @@ function createNotification(notificationTitle) {
         manifestVersion = "1.00";
     }
     chrome.notifications.create(
-        'ankiQuickAdder', {
+        notificationId || 'ankiQuickAdder', {
         type: 'basic',
         iconUrl: 'icon-64.png',
         title: manifestName + ' ' + manifestVersion,
