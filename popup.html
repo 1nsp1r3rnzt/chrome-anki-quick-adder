@@ -301,7 +301,7 @@
             <tr>
                 <td>Text-to-speech audio:
                     <img src="images/info.png" class="info-image" alt="icon"
-                         title="Adds a spoken version of one field to each new note. Anki downloads the audio through AnkiConnect, so Anki needs internet access.">
+                         title="Adds a spoken version of one field to each new note. The text of that field is sent to Google Translate's unofficial text-to-speech endpoint (or to the TTS URL below, if set). Anki downloads the audio through AnkiConnect, so Anki needs internet access. If the download fails, the note is added without audio.">
                 </td>
                 <td>
                     <div class="select-style"><select id="ttsEnabled">
@@ -337,7 +337,7 @@
             <tr>
                 <td>TTS URL (optional):
                     <img src="images/info.png" class="info-image" alt="icon"
-                         title="Leave empty for the default. Custom TTS services: use {lang} and {text} placeholders; the URL must return an audio file.">
+                         title="Leave empty for the default (Google Translate's unofficial TTS endpoint, which receives the field text). Custom TTS services: use {lang} and {text} placeholders; the URL must return an audio file.">
                 </td>
                 <td><input type="text" id="ttsUrl" placeholder="default" size="24"></td>
             </tr>
