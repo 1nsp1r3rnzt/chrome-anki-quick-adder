@@ -61,17 +61,37 @@ function planTtsAudio(params, settings) {
     };
 }
 
-// Adds TTS audio to addNote params. storeMedia(url, filename) must return a Promise of the stored
-// filename (AnkiConnect storeMediaFile) and reject when the download fails; a rejection with
-// `ankiUnreachable: true` means AnkiConnect itself could not be reached.
+var TTS_MAX_ERROR_CHARS = 120;
+
+// Short, URL-free version of a download error for the notification.
+// AnkiConnect reports e.g. "<full url> download failed with return code 429".
+function ttsErrorText(error, url) {
+    var text = String(error).split(url).join("").replace(/\s+/g, " ").trim();
+    if (!text) text = "unknown error";
+    return text.length > TTS_MAX_ERROR_CHARS ? text.slice(0, TTS_MAX_ERROR_CHARS - 1) + "…" : text;
+}
+
+// Adds TTS audio to addNote params.
+// storeMedia(url, filename) must return a Promise of the stored filename (AnkiConnect storeMediaFile)
+// and reject when the download fails; a rejection with `ankiUnreachable: true` means AnkiConnect
+// itself could not be reached.
+// canAdd(params), optional, returns a Promise of whether Anki would accept the note (AnkiConnect
+// canAddNote, which includes the duplicate check). When it resolves false, nothing is downloaded:
+// addNote will be rejected and report why. If canAdd fails (e.g. older AnkiConnect), we go ahead.
 // Never rejects: on any failure the note is added without audio and `warning` says why.
 // Resolves {params, warning}; params is a copy when audio was added, the original otherwise.
-function applyTtsAudio(params, settings, storeMedia) {
+function applyTtsAudio(params, settings, storeMedia, canAdd) {
     var plan = planTtsAudio(params, settings);
     if (!plan.media) return Promise.resolve({ params: params, warning: plan.skipped });
     var media = plan.media;
+    var REJECTED = {};
     return Promise.resolve()
-        .then(function () { return storeMedia(media.url, media.filename); })
+        .then(function () { return canAdd ? canAdd(params) : true; })
+        .then(function (ok) { return ok; }, function () { return true; })
+        .then(function (ok) {
+            if (ok === false) throw REJECTED;
+            return storeMedia(media.url, media.filename);
+        })
         .then(function (storedName) {
             var copy = JSON.parse(JSON.stringify(params));
             copy.note.fields[media.field] = (copy.note.fields[media.field] || "") +
@@ -80,8 +100,8 @@ function applyTtsAudio(params, settings, storeMedia) {
         })
         .catch(function (error) {
             // Anki itself unreachable: addNote will fail and report that, so no extra TTS notice.
-            if (error && error.ankiUnreachable) return { params: params, warning: null };
-            return { params: params, warning: "TTS: audio download failed, note added without audio (" + String(error) + ")" };
+            if (error === REJECTED || (error && error.ankiUnreachable)) return { params: params, warning: null };
+            return { params: params, warning: "TTS: audio download failed, note added without audio (" + ttsErrorText(error, media.url) + ")" };
         });
 }
 
@@ -90,6 +110,7 @@ if (typeof module !== "undefined") {
         planTtsAudio: planTtsAudio,
         applyTtsAudio: applyTtsAudio,
         ttsPlainText: ttsPlainText,
+        ttsErrorText: ttsErrorText,
         TTS_DEFAULT_URL: TTS_DEFAULT_URL,
         TTS_NOTIFICATION_ID: TTS_NOTIFICATION_ID
     };
