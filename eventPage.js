@@ -235,10 +235,10 @@ function ankiConnectRequest(action, version, params = {}) {
 // Downloads TTS audio via AnkiConnect storeMediaFile before addNote (see src/tts.js).
 // Never rejects; on failure the note is added without audio and the user is told why.
 function withTtsAudio(params) {
-    return applyTtsAudio(params, allSettings, function (url, filename) {
+    function call(action, callParams) {
         return fetch('http://127.0.0.1:8765', {
             method: 'POST',
-            body: JSON.stringify({ action: "storeMediaFile", version: 6, params: { filename: filename, url: url } })
+            body: JSON.stringify({ action: action, version: 6, params: callParams })
         })
             .catch(e => { throw { ankiUnreachable: true, toString: () => String(e) }; })
             .then(response => response.json())
@@ -246,7 +246,13 @@ function withTtsAudio(params) {
                 if (response.error) throw response.error;
                 return response.result;
             });
-    }).then(function (tts) {
+    }
+    // deleteExisting: false so a filename clash never overwrites another note's audio;
+    // Anki then stores the file under a new name, which is what we put in [sound:].
+    var storeMedia = (url, filename) => call("storeMediaFile", { filename: filename, url: url, deleteExisting: false });
+    // Checked first so duplicates (rejected by addNote anyway) don't download and store audio.
+    var canAdd = (noteParams) => call("canAddNote", { note: noteParams.note });
+    return applyTtsAudio(params, allSettings, storeMedia, canAdd).then(function (tts) {
         if (tts.warning) notifyUser(tts.warning, "notifyalert", TTS_NOTIFICATION_ID);
         return tts.params;
     });
